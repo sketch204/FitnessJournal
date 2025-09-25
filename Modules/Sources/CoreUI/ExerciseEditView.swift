@@ -10,13 +10,21 @@ import Data
 import SwiftUI
 
 struct ExerciseEditView: View {
+    @Environment(\.dismiss) private var dismiss
+    
     let store: WorkoutStore
     let workoutId: Workout.ID
     let exerciseId: Exercise.ID?
     let onSave: ((Exercise) -> Void)?
     
+    @State private var originalExercise: Exercise?
+    
     @State private var name: String
     @State private var comment: String
+    
+    private var isEditing: Bool {
+        originalExercise != nil
+    }
     
     init(
         store: WorkoutStore,
@@ -30,9 +38,11 @@ struct ExerciseEditView: View {
         self.onSave = onSave
 
         if let exerciseId, let exercise = store.exercise(with: exerciseId, for: workoutId) {
+            _originalExercise = State(initialValue: exercise)
             _name = State(initialValue: exercise.name)
             _comment = State(initialValue: exercise.comment)
         } else {
+            _originalExercise = State(initialValue: nil)
             _name = State(initialValue: "")
             _comment = State(initialValue: "")
         }
@@ -67,31 +77,86 @@ struct ExerciseEditView: View {
                     }
             }
         }
-        .onDisappear {
-            guard !name.isEmpty else { return }
-            
-            let exercise = store.updateExercise(
-                with: exerciseId,
-                for: workoutId
-            ) { exercise in
-                exercise.name = name
+        .navigationTitle(isEditing ? "Edit Exercise" : "Create Exercise")
+        .toolbar {
+            Button("Done") {
+                dismiss()
             }
+        }
+        .onChange(of: name) {
+            guard isEditing else { return }
             
-            exercise.map { onSave?($0) }
+            saveExercise()
+        }
+        .onChange(of: comment) {
+            guard isEditing else { return }
+            
+            saveExercise()
+        }
+        .onDisappear {
+            let exercise = saveExercise()
+            
+            let didDelete = cleanUpEmpty(exercise: exercise)
+            
+            if !didDelete {
+                exercise.map { onSave?($0) }
+            }
+        }
+    }
+    
+    @discardableResult
+    private func saveExercise() -> Exercise? {
+        let exercise = store.updateExercise(
+            with: exerciseId,
+            for: workoutId
+        ) { exercise in
+            exercise.name = name
+            exercise.comment = comment
+        }
+        
+        return exercise
+    }
+    
+    /// Cleans up the exercise. For newly created ones, if name is empty it will delete it. For edited ones, if name is empty it will reset it.
+    /// - Parameter exercise: The exercise to cleanup
+    /// - Returns: True if exercise is delete
+    private func cleanUpEmpty(exercise: Exercise?) -> Bool {
+        guard let exercise,
+              name.isEmpty || exercise.name.isEmpty
+        else { return false }
+        
+        if isEditing, let originalExercise {
+            store.updateExercise(originalExercise, for: workoutId, createIfMissing: false)
+            return false
+        } else {
+            store.deleteExercise(exercise, for: workoutId)
+            return true
         }
     }
 }
 
-#Preview {
+#Preview("Edit Exercise") {
     let store = WorkoutStore.preview()
     let workout = store.workouts.first!
     let exercise = store.exercises(for: workout.id)!.first!
     
-    ExerciseEditView(
-        store: store,
-        navigation: ExerciseNavigation(
+    NavigationStack {
+        ExerciseEditView(
+            store: store,
             workoutId: workout.id,
             exerciseId: exercise.id
         )
-    )
+    }
+}
+
+#Preview("Create Exercise") {
+    let store = WorkoutStore.preview()
+    let workout = store.workouts.first!
+    
+    NavigationStack {
+        ExerciseEditView(
+            store: store,
+            workoutId: workout.id
+        )
+    }
 }

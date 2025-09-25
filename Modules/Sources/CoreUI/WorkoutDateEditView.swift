@@ -10,6 +10,7 @@ import Data
 import SwiftUI
 
 struct WorkoutDateEditView: View {
+    @Environment(\.dismiss) private var dismiss
     let store: WorkoutStore
     let workoutId: Workout.ID
     
@@ -25,14 +26,15 @@ struct WorkoutDateEditView: View {
     }
     
     var body: some View {
-        VStack(alignment: .leading) {
-            Text("Workout Date")
-                .font(.title2)
-                .padding()
-                .multilineTextAlignment(.leading)
-            
+        Form {
             DatePicker("Workout Date", selection: $date, displayedComponents: .date)
                 .datePickerStyle(.graphical)
+        }
+        .navigationTitle("Workout Date")
+        .toolbar {
+            Button("Done") {
+                dismiss()
+            }
         }
         .onChange(of: date) {
             guard var workout = store.workout(with: workoutId) else { return }

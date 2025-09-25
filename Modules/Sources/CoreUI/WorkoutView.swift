@@ -58,8 +58,10 @@ public struct WorkoutView: View {
             .animation(.default, value: workout.exercises.count)
             .navigationTitle("Workout")
             .sheet(isPresented: $isEditingDate) {
-                WorkoutDateEditView(store: store, workoutId: workoutId)
-                    .presentationDetents([.medium])
+                NavigationStack {
+                    WorkoutDateEditView(store: store, workoutId: workoutId)
+                }
+                .presentationDetents([.medium])
             }
             .sheet(isPresented: $isAddingExercise) {
                 NavigationStack {
