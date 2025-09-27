@@ -17,9 +17,21 @@ struct ExerciseLookupView: View {
     
     @State private var searchString: String = ""
     
+    @State private var isRenamingExercise: Bool = false
+    @State private var renamedExercise: Exercise?
+    
+    @State private var newExerciseName: String = ""
+    
+    @State private var isPresentingError: Bool = false
+    @State private var exerciseDeletionError: WorkoutStoreError?
+    private var errorDescription: String {
+        "Could not delete exercise. \(exerciseDeletionError?.description ?? "")"
+    }
+    
     private var filteredExercises: [Exercise] {
         guard !searchString.isEmpty else {
             return store.exercises
+                .sorted(using: KeyPathComparator(\.name))
         }
         let tokens = searchString.split(separator: " ")
             .map { $0.lowercased() }
@@ -54,6 +66,17 @@ struct ExerciseLookupView: View {
                     ExerciseRow(exercise)
                 }
                 .buttonStyle(.plain)
+                .contextMenu {
+                    renameButton(exercise)
+                    Button(role: .destructive) {
+                        deleteExercise(exercise)
+                    } label: {
+                        Label("Delete", systemImage: "trash")
+                    }
+                }
+                .swipeActions(edge: .leading) {
+                    renameButton(exercise)
+                }
             }
         }
         .listStyle(.plain)
@@ -66,6 +89,32 @@ struct ExerciseLookupView: View {
                     dismiss()
                 }
             }
+        }
+        .alert("Rename Exercise", isPresented: $isRenamingExercise, presenting: renamedExercise) { exercise in
+            TextField("New name", text: $newExerciseName, prompt: Text(exercise.name))
+            
+            Button("Rename") {
+                renameExercise(exercise.id, name: newExerciseName)
+            }
+            
+            Button("Cancel", role: .cancel) {
+                dismissExerciseRenameDialog()
+            }
+        }
+        .alert(errorDescription, isPresented: $isPresentingError, presenting: exerciseDeletionError) { error in
+            Button("OK") {
+                isPresentingError = false
+                exerciseDeletionError = nil
+            }
+        }
+    }
+    
+    private func renameButton(_ exercise: Exercise) -> some View {
+        Button {
+            renamedExercise = exercise
+            isRenamingExercise = true
+        } label: {
+            Label("Rename", systemImage: "pencil")
         }
     }
     
@@ -80,6 +129,29 @@ struct ExerciseLookupView: View {
     private func selectExercise(_ exercise: Exercise) {
         dismiss()
         onSelect(exercise)
+    }
+    
+    private func renameExercise(_ exerciseId: Exercise.ID, name: String) {
+        store.updateExercise(with: exerciseId) { exercise in
+            exercise.name = name
+        }
+        
+        dismissExerciseRenameDialog()
+    }
+    
+    private func dismissExerciseRenameDialog() {
+        isRenamingExercise = false
+        renamedExercise = nil
+        newExerciseName = ""
+    }
+    
+    private func deleteExercise(_ exercise: Exercise) {
+        do {
+            try store.deleteExercise(exercise)
+        } catch {
+            isPresentingError = true
+            exerciseDeletionError = error
+        }
     }
 }
 

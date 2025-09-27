@@ -278,13 +278,16 @@ extension WorkoutStore {
         segments(with: exerciseId).isEmpty
     }
     
-    public func deleteExercise(_ exercise: Exercise) throws {
+    public func deleteExercise(_ exercise: Exercise) throws(WorkoutStoreError) {
         try deleteExercise(exercise.id)
     }
     
-    public func deleteExercise(_ exerciseId: Exercise.ID) throws {
+    public func deleteExercise(_ exerciseId: Exercise.ID) throws(WorkoutStoreError) {
         guard canDeleteExercise(exerciseId) else {
-            throw WorkoutStoreError.exerciseUsedInSegments
+            if let exercise = exercise(for: exerciseId) {
+                throw WorkoutStoreError.exerciseUsedInSegments(exercise)
+            }
+            return
         }
         exercises.removeAll(where: { $0.id == exerciseId })
     }

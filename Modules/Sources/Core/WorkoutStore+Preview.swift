@@ -10,10 +10,12 @@ import Data
 public extension WorkoutStore {
     static func preview(
         workouts: [Workout] = [.sample],
-        exercises: [Exercise] = [.sampleBenchPress, .sampleBicepCurl, .sampleChestFlys],
+        extraExercises: [Exercise] = [],
         executing setup: ((WorkoutStore) -> Void)? = nil
     ) -> Self {
-        let output = Self(exercises: exercises, workouts: workouts)
+        let exercises = Set(workouts.flatMap({ $0.segments.map(\.exercise) }))
+        
+        let output = Self(exercises: Array(exercises) + extraExercises, workouts: workouts)
         setup?(output)
         return output
     }
