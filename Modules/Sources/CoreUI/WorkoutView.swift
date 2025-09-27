@@ -49,7 +49,7 @@ public struct WorkoutView: View {
                         }
                 }
                 
-                Button("Add Exercise") {
+                Button("Add Segment") {
                     isAddingExercise = true
                 }
                 .buttonStyle(.borderless)
@@ -63,22 +63,23 @@ public struct WorkoutView: View {
                 }
                 .presentationDetents([.medium])
             }
-//            .sheet(isPresented: $isAddingExercise) {
-//                NavigationStack {
-//                    SegmentEditView(store: store, workoutId: workoutId) { segment in
-//                        appActions.perform(
-//                            NavigateToSegmentAction(
-//                                workoutId: workoutId,
-//                                segmentId: segment.id
-//                            )
-//                        )
-//                    }
-//                    .presentationDetents([.medium])
-//                }
-//            }
+            .sheet(isPresented: $isAddingExercise) {
+                NavigationStack {
+                    ExerciseLookupView(store: store) { exercise in
+                        createSegment(with: exercise)
+                    }
+                }
+            }
         } else {
             ContentUnavailableView("Workout not found!", systemImage: "questionmark.circle.dashed")
         }
+    }
+    
+    private func createSegment(with exercise: Exercise) {
+        let segment = Segment(exercise: exercise)
+        store.createSegment(segment, for: workoutId)
+        
+        appActions.perform(NavigateToSegmentAction(workoutId: workoutId, segmentId: segment.id))
     }
     
     private func dateLabel(_ workout: Workout) -> some View {
@@ -103,5 +104,6 @@ public struct WorkoutView: View {
         .navigationDestination(for: SegmentNavigation.self) { navigation in
             SegmentView(store: store, navigation: navigation)
         }
+        .environment(\.appActions, AppActions())
     }
 }

@@ -135,7 +135,7 @@ extension WorkoutStore {
     }
     
     @discardableResult
-    public func updateExercise(
+    public func updateSegment(
         segmentId: Segment.ID,
         workoutId: Workout.ID,
         update: (inout Segment) -> Void

@@ -8,8 +8,12 @@
 import Data
 
 public extension WorkoutStore {
-    static func preview(workouts: [Workout] = [.sample], executing setup: ((WorkoutStore) -> Void)? = nil) -> Self {
-        let output = Self(workouts: workouts)
+    static func preview(
+        workouts: [Workout] = [.sample],
+        exercises: [Exercise] = [.sampleBenchPress, .sampleBicepCurl, .sampleChestFlys],
+        executing setup: ((WorkoutStore) -> Void)? = nil
+    ) -> Self {
+        let output = Self(exercises: exercises, workouts: workouts)
         setup?(output)
         return output
     }

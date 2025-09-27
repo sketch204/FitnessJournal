@@ -22,6 +22,7 @@ struct SegmentView: View {
         store.segment(for: navigation)
     }
     
+    @State private var isEditingSegment: Bool = false
     @State private var editedSet: Segment.Set?
     
     init(store: WorkoutStore, navigation: SegmentNavigation) {
@@ -32,11 +33,11 @@ struct SegmentView: View {
     var body: some View {
         if let workout, let segment {
             List {
-//                Button {
-//                    isEditingSet = true
-//                } label: {
+                Button {
+                    isEditingSegment = true
+                } label: {
                     headerView(workout: workout, segment: segment)
-//                }
+                }
                 
                 ForEach(segment.sets) { set in
                     Button {
@@ -54,15 +55,13 @@ struct SegmentView: View {
                 }
                 
                 Button("Add Set") {
-                    let newSet = newSet()
-                    store.createSet(newSet, segmentId: segment.id, workoutId: workout.id)
-                    editedSet = newSet
+                    addNewSet()
                 }
                 .buttonStyle(.borderless)
             }
             .listStyle(.plain)
             .animation(.default, value: segment.sets.count)
-            .navigationTitle("Exercise")
+            .navigationTitle("Segment")
             .sheet(item: $editedSet) { set in
                 NavigationStack {
                     SetEditView(
@@ -76,12 +75,14 @@ struct SegmentView: View {
                 }
                 .presentationDetents([.medium, .large])
             }
-//            .sheet(isPresented: $isEditingSet) {
-//                NavigationStack {
-//                    ExerciseEditView(store: store, navigation: navigation)
-//                }
-//                .presentationDetents([.medium, .large])
-//            }
+            .sheet(isPresented: $isEditingSegment) {
+                NavigationStack {
+                    ExerciseLookupView(store: store) { exercise in
+                        updateSegment(with: exercise)
+                    }
+                }
+                .presentationDetents([.medium, .large])
+            }
         } else {
             ContentUnavailableView("Workout or exercise not found!", systemImage: "questionmark.circle.dashed")
         }
@@ -98,6 +99,25 @@ struct SegmentView: View {
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
         }
+    }
+    
+    private func updateSegment(with exercise: Exercise) {
+        store.updateSegment(
+            segmentId: navigation.segmentId,
+            workoutId: navigation.workoutId
+        ) { segment in
+            segment.exercise = exercise
+        }
+    }
+    
+    private func addNewSet() {
+        let newSet = newSet()
+        store.createSet(
+            newSet,
+            segmentId: navigation.segmentId,
+            workoutId: navigation.workoutId
+        )
+        editedSet = newSet
     }
     
     private func newSet() -> Segment.Set {

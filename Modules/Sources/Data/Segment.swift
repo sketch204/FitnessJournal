@@ -24,7 +24,7 @@ public struct Segment: Hashable, Codable, Sendable, Identifiable {
     public var exercise: Exercise
     public var sets: [Set]
     
-    public init(id: Identifier<Self, UUID> = .new, exercise: Exercise, sets: [Set]) {
+    public init(id: Identifier<Self, UUID> = .new, exercise: Exercise, sets: [Set] = []) {
         self.id = id
         self.exercise = exercise
         self.sets = sets
