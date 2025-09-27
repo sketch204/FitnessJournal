@@ -253,6 +253,8 @@ extension WorkoutStore {
         }
         
         exercises[exerciseIndex] = exercise
+        updateSegments(using: exercise)
+        
         return exercise
     }
     
@@ -285,5 +287,21 @@ extension WorkoutStore {
             throw WorkoutStoreError.exerciseUsedInSegments
         }
         exercises.removeAll(where: { $0.id == exerciseId })
+    }
+    
+    // MARK: Helpers
+    
+    private func updateSegments(using exercise: Exercise) {
+        workouts = workouts.map { workout in
+            var workout = workout
+            workout.segments = workout.segments.map { segment in
+                var segment = segment
+                if segment.exercise.id == exercise.id {
+                    segment.exercise = exercise
+                }
+                return segment
+            }
+            return workout
+        }
     }
 }

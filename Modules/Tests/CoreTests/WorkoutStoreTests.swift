@@ -23,31 +23,6 @@ struct WorkoutStoreTests {
     @Test func itShouldInitWithWorkouts() {
         #expect(store.workouts == [sampleWorkout])
     }
-    
-    @Test func itShouldReturnExercises() {
-        let segments = store.segments(for: sampleWorkout.id)
-        #expect(segments?.isEmpty == false)
-    }
-    
-    @Test func itShouldNotReturnExercisesForNonExistentWorkout() {
-        let segments = store.segments(for: Workout.sample.id)
-        #expect(segments == nil)
-    }
-    
-    @Test func itShouldReturnSets() {
-        let sets = store.sets(segmentId: sampleSegment.id, workoutId: sampleWorkout.id)
-        #expect(sets?.isEmpty == false)
-    }
-    
-    @Test func itShouldNotReturnSetsForNonExistentWorkout() {
-        let sets = store.sets(segmentId: sampleSegment.id, workoutId: .new)
-        #expect(sets == nil)
-    }
-    
-    @Test func itShouldNotReturnSetsForNonExistentExercise() {
-        let sets = store.sets(segmentId: .new, workoutId: sampleWorkout.id)
-        #expect(sets == nil)
-    }
 }
 
 // MARK: Workout CRUD
@@ -114,7 +89,7 @@ extension WorkoutStoreTests {
     }
 }
 
-// MARK: Exercise CRUD
+// MARK: Segments CRUD
 
 extension WorkoutStoreTests {
     @Suite("Segments CRUD")
@@ -137,6 +112,18 @@ extension WorkoutStoreTests {
             let createdSegment = store.createSegment(newSegment, for: sampleWorkout.id)
             #expect(createdSegment == newSegment)
             #expect(store.workouts.first?.segments == sampleWorkout.segments + [newSegment])
+        }
+        
+        // MARK: Read
+        
+        @Test func itShouldReturnSegments() {
+            let segments = store.segments(for: sampleWorkout.id)
+            #expect(segments?.isEmpty == false)
+        }
+        
+        @Test func itShouldNotReturnSegmentsForNonExistentWorkout() {
+            let segments = store.segments(for: Workout.sample.id)
+            #expect(segments == nil)
         }
         
         // MARK: Update
@@ -200,6 +187,23 @@ extension WorkoutStoreTests {
             #expect(store.workouts.first?.segments.first!.sets == sampleSegment.sets + [newSet])
         }
         
+        // MARK: Read
+        
+        @Test func itShouldReturnSets() {
+            let sets = store.sets(segmentId: sampleSegment.id, workoutId: sampleWorkout.id)
+            #expect(sets?.isEmpty == false)
+        }
+        
+        @Test func itShouldNotReturnSetsForNonExistentWorkout() {
+            let sets = store.sets(segmentId: sampleSegment.id, workoutId: .new)
+            #expect(sets == nil)
+        }
+        
+        @Test func itShouldNotReturnSetsForNonExistentExercise() {
+            let sets = store.sets(segmentId: .new, workoutId: sampleWorkout.id)
+            #expect(sets == nil)
+        }
+        
         // MARK: Update
         
         @Test func itShouldNotUpdateMissingSets() {
@@ -230,6 +234,84 @@ extension WorkoutStoreTests {
             let set = Segment.Set.sampleTotal
             store.deleteSet(set, segmentId: sampleSegment.id, workoutId: sampleWorkout.id)
             #expect(store.workouts == [sampleWorkout])
+        }
+    }
+}
+
+// MARK: Exercises CRUD
+ 
+extension WorkoutStoreTests {
+    @Suite("Exercises CRUD")
+    class ExercisesCRUD {
+        let sampleExercise: Exercise
+        var store: WorkoutStore
+        
+        init() {
+            let exercise = Exercise.sample
+            sampleExercise = exercise
+            store = WorkoutStore(exercises: [
+                exercise,
+            ])
+        }
+        
+        // MARK: Create
+        
+        @Test func itShouldCreateExercises() {
+            let newExercise = Exercise(name: "New")
+            let createdExercise = store.createExercise(newExercise)
+            #expect(createdExercise == newExercise)
+            #expect(store.exercises == [sampleExercise, newExercise])
+        }
+        
+        // MARK: Update
+        
+        @Test func itShouldNotUpdateMissingExercises() {
+            let newExercise = Exercise(name: "New")
+            let createdExercise = store.updateExercise(newExercise)
+            #expect(createdExercise == nil)
+            #expect(store.exercises == [sampleExercise])
+        }
+        
+        @Test func itShouldUpdateExistingExercises() {
+            var sample = sampleExercise
+            sample.name = "New"
+            let updatedExercise = store.updateExercise(sample)
+            #expect(updatedExercise == sample)
+            #expect(store.exercises == [sample])
+        }
+        
+        @Test func itShouldUpdateSegmentsUsingUpdatedExercise() {
+            let workout = Workout.sample
+            var exercise = workout.segments.first!.exercise
+            store = WorkoutStore(exercises: [exercise], workouts: [workout])
+            
+            exercise.name = "New"
+            store.updateExercise(exercise)
+            
+            #expect(store.workouts.first!.segments.first!.exercise == exercise)
+        }
+        
+        // MARK: Delete
+        
+        @Test func itShouldDeleteExercises() throws {
+            try store.deleteExercise(sampleExercise)
+            #expect(store.exercises == [])
+        }
+        
+        @Test func itShouldNotDeleteNonExistentExercises() throws {
+            let newExercise = Exercise(name: "New")
+            try store.deleteExercise(newExercise)
+            #expect(store.exercises == [sampleExercise])
+        }
+        
+        @Test func itShouldNotDeleteExercisesUsedBySegments() {
+            let workout = Workout.sample
+            let exercise = workout.segments.first!.exercise
+            store = WorkoutStore(exercises: [exercise], workouts: [workout])
+            
+            #expect(throws: WorkoutStoreError.exerciseUsedInSegments) {
+                try self.store.deleteExercise(exercise)
+            }
         }
     }
 }
