@@ -22,13 +22,11 @@ public struct Exercise: Hashable, Codable, Sendable, Identifiable {
     
     public let id: Identifier<Self, UUID>
     public var name: String
-    public var comment: String
     public var sets: [Set]
     
-    public init(id: Identifier<Self, UUID> = .new, name: String, comment: String = "", sets: [Set]) {
+    public init(id: Identifier<Self, UUID> = .new, name: String, sets: [Set]) {
         self.id = id
         self.name = name
-        self.comment = comment
         self.sets = sets
     }
 }
@@ -56,7 +54,6 @@ public extension Exercise {
         .init(
             id: .new,
             name: "Bicep Curl",
-            comment: "",
             sets: (1...3).map { _ in
                 Set(
                     id: .new,
@@ -71,7 +68,6 @@ public extension Exercise {
         .init(
             id: .new,
             name: "Bench Press",
-            comment: "",
             sets: (1...3).map { _ in
                 Set(
                     id: .new,
@@ -86,7 +82,6 @@ public extension Exercise {
         .init(
             id: .new,
             name: "Deadlifts",
-            comment: "",
             sets: (1...5).map { _ in
                 Set(
                     id: .new,
@@ -101,7 +96,6 @@ public extension Exercise {
         .init(
             id: .new,
             name: "Leg Extensions",
-            comment: "",
             sets: (1...3).map { _ in
                 Set(
                     id: .new,
@@ -116,7 +110,6 @@ public extension Exercise {
         .init(
             id: .new,
             name: "Chest Flys",
-            comment: "",
             sets: (1...3).map { _ in
                 Set(
                     id: .new,

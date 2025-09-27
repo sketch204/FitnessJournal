@@ -64,7 +64,6 @@ struct ExerciseView: View {
                 .buttonStyle(.borderless)
             }
             .listStyle(.plain)
-            .animation(.default, value: exercise.comment.isEmpty)
             .animation(.default, value: exercise.sets.count)
             .navigationTitle("Exercise")
             .sheet(item: $editedSet) { set in
@@ -101,12 +100,6 @@ struct ExerciseView: View {
                 .multilineTextAlignment(.leading)
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
-            
-            if !exercise.comment.isEmpty {
-                Text(exercise.comment)
-                    .multilineTextAlignment(.leading)
-                    .lineLimit(3)
-            }
         }
     }
     

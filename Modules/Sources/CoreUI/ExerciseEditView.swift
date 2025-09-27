@@ -20,7 +20,6 @@ struct ExerciseEditView: View {
     @State private var originalExercise: Exercise?
     
     @State private var name: String
-    @State private var comment: String
     
     private var isEditing: Bool {
         originalExercise != nil
@@ -40,11 +39,9 @@ struct ExerciseEditView: View {
         if let exerciseId, let exercise = store.exercise(with: exerciseId, for: workoutId) {
             _originalExercise = State(initialValue: exercise)
             _name = State(initialValue: exercise.name)
-            _comment = State(initialValue: exercise.comment)
         } else {
             _originalExercise = State(initialValue: nil)
             _name = State(initialValue: "")
-            _comment = State(initialValue: "")
         }
     }
     
@@ -64,18 +61,6 @@ struct ExerciseEditView: View {
     var body: some View {
         Form {
             TextField("Name", text: $name, prompt: Text("Bench Press"))
-            
-            Section("Comment") {
-                TextEditor(text: $comment)
-                    .overlay(alignment: .topLeading) {
-                        if comment.isEmpty {
-                            Text("Workout description")
-                                .foregroundStyle(.placeholder)
-                                .padding(.top, 8)
-                                .padding(.leading, 5)
-                        }
-                    }
-            }
         }
         .navigationTitle(isEditing ? "Edit Exercise" : "Create Exercise")
         .toolbar {
@@ -84,11 +69,6 @@ struct ExerciseEditView: View {
             }
         }
         .onChange(of: name) {
-            guard isEditing else { return }
-            
-            saveExercise()
-        }
-        .onChange(of: comment) {
             guard isEditing else { return }
             
             saveExercise()
@@ -111,7 +91,6 @@ struct ExerciseEditView: View {
             for: workoutId
         ) { exercise in
             exercise.name = name
-            exercise.comment = comment
         }
         
         return exercise
