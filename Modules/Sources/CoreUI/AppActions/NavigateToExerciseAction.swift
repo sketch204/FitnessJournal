@@ -9,11 +9,24 @@ import Core
 import Data
 import SwiftUI
 
-struct NavigateToExerciseAction: AppAction {
-    let navigation: ExerciseNavigation
+struct NavigateToSegmentAction: AppAction {
+    let navigation: SegmentNavigation
+    
+    init(navigation: SegmentNavigation) {
+        self.navigation = navigation
+    }
+    
+    init(workoutId: Workout.ID, segmentId: Segment.ID) {
+        self.init(
+            navigation: SegmentNavigation(
+                workoutId: workoutId,
+                segmentId: segmentId
+            )
+        )
+    }
 }
 
-extension NavigateToExerciseAction {
+extension NavigateToSegmentAction {
     fileprivate struct Handler: ViewModifier {
         @Environment(\.appActions) var appActions
         
@@ -22,19 +35,18 @@ extension NavigateToExerciseAction {
         
         func body(content: Content) -> some View {
             content
-                .onReceive(appActions.events(for: NavigateToExerciseAction.self)) { action in
-                    print("Navigating to \(action.navigation)")
+                .onReceive(appActions.events(for: NavigateToSegmentAction.self)) { action in
                     path.append(action.navigation)
                 }
-                .navigationDestination(for: ExerciseNavigation.self) { navigation in
-                    ExerciseView(store: store, navigation: navigation)
+                .navigationDestination(for: SegmentNavigation.self) { navigation in
+                    SegmentView(store: store, navigation: navigation)
                 }
         }
     }
 }
 
 extension View {
-    func registerExerciseNavigationActionHandler(store: WorkoutStore, path: Binding<NavigationPath>) -> some View {
-        modifier(NavigateToExerciseAction.Handler(store: store, path: path))
+    func registerSegmentNavigationActionHandler(store: WorkoutStore, path: Binding<NavigationPath>) -> some View {
+        modifier(NavigateToSegmentAction.Handler(store: store, path: path))
     }
 }

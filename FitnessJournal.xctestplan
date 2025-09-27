@@ -1,0 +1,29 @@
+{
+  "configurations" : [
+    {
+      "id" : "23A564B4-51AE-467E-BD81-BC788D00F79E",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : false,
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:FitnessJournal.xcodeproj",
+      "identifier" : "2D6B32C92E6529AF00E7067B",
+      "name" : "FitnessJournal"
+    }
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:Modules",
+        "identifier" : "CoreTests",
+        "name" : "CoreTests"
+      }
+    }
+  ],
+  "version" : 1
+}

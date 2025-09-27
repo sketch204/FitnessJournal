@@ -1,5 +1,5 @@
 //
-//  ExerciseRow.swift
+//  SegmentRow.swift
 //  Modules
 //
 //  Created by Inal Gotov on 2025-08-31.
@@ -8,17 +8,21 @@
 import Data
 import SwiftUI
 
-struct ExerciseRow: View {
-    let exercise: Exercise
+struct SegmentRow: View {
+    let segment: Segment
+    
+    init(_ segment: Segment) {
+        self.segment = segment
+    }
     
     var body: some View {
         HStack(alignment: .firstTextBaseline) {
             VStack(alignment: .leading) {
-                Text(exercise.name)
+                Text(segment.exercise.name)
                     .multilineTextAlignment(.leading)
                     .font(.title)
                 
-                Text("\(exercise.sets.count) Sets")
+                Text("\(segment.sets.count) Sets")
                     .multilineTextAlignment(.leading)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
@@ -26,7 +30,7 @@ struct ExerciseRow: View {
                 
             Spacer()
             
-            if let weight = exercise.displayWeight {
+            if let weight = segment.displayWeight {
                 WeightView(weight: weight)
             }
         }
@@ -35,9 +39,9 @@ struct ExerciseRow: View {
 
 #Preview("Default") {
     List {
-        ExerciseRow(exercise: .sampleBenchPress)
-        ExerciseRow(exercise: .sampleDeadlifts)
-        ExerciseRow(exercise: .sampleChestFlys)
+        SegmentRow(.sampleBenchPress)
+        SegmentRow(.sampleDeadlifts)
+        SegmentRow(.sampleChestFlys)
     }
     .listStyle(.plain)
 }

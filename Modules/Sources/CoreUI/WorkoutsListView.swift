@@ -45,8 +45,7 @@ public struct WorkoutsListView: View {
     }
     
     private func addNewWorkout() {
-        let workout = Workout(date: Date(), exercises: [])
-        store.createWorkout(workout)
+        let workout = store.createWorkout()
         appActions.perform(NavigateToWorkoutAction(workoutId: workout.id))
     }
 }

@@ -23,7 +23,7 @@ public struct RootView: View {
         NavigationStack(path: $navigationPath) {
             WorkoutsListView(store: store)
                 .registerWorkoutNavigationHandler(store: store, path: $navigationPath)
-                .registerExerciseNavigationActionHandler(store: store, path: $navigationPath)
+                .registerSegmentNavigationActionHandler(store: store, path: $navigationPath)
         }
         .environment(\.appActions, appActions)
     }

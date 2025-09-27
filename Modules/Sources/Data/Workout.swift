@@ -10,12 +10,16 @@ import Foundation
 public struct Workout: Hashable, Codable, Sendable, Identifiable {
     public let id: Identifier<Self, UUID>
     public var date: Date
-    public var exercises: [Exercise]
+    public var segments: [Segment]
     
-    public init(id: Identifier<Self, UUID> = .new, date: Date, exercises: [Exercise]) {
+    public init(
+        id: Identifier<Self, UUID> = .new,
+        date: Date = .now,
+        segments: [Segment] = []
+    ) {
         self.id = id
         self.date = date
-        self.exercises = exercises
+        self.segments = segments
     }
 }
 
@@ -25,7 +29,7 @@ public extension Workout {
         Workout(
             id: .new,
             date: Date(timeIntervalSince1970: 1756691175),
-            exercises: [
+            segments: [
                 .sampleBenchPress,
                 .sampleChestFlys,
                 .sampleBicepCurl,

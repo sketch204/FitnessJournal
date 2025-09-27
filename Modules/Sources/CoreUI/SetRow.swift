@@ -11,7 +11,7 @@ import SwiftUI
 
 struct SetRow: View {
     let store: WorkoutStore
-    let set: Exercise.Set
+    let set: Segment.Set
     
     var body: some View {
         HStack {
@@ -28,8 +28,8 @@ struct SetRow: View {
 #Preview {
     let store = WorkoutStore.preview()
     let workout = store.workouts.first!
-    let exercise = store.exercises(for: workout.id)!.first!
-    let sets = store.sets(for: workout.id, in: exercise.id)!
+    let segment = store.segments(for: workout.id)!.first!
+    let sets = store.sets(segmentId: segment.id, workoutId: workout.id)!
     
     List(sets) { set in
         SetRow(

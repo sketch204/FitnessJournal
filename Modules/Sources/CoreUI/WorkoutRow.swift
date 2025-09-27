@@ -24,7 +24,7 @@ struct WorkoutRow: View {
                     .foregroundStyle(.secondary)
             }
             
-            Text(workout.exercises.map(\.name).joined(separator: ", "))
+            Text(workout.segments.map(\.exercise.name).joined(separator: ", "))
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
         }

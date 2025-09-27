@@ -34,8 +34,8 @@ struct SetEditView: View {
         .onChange(of: weight) {
             store.updateSet(
                 with: navigation.setId,
-                for: navigation.workoutId,
-                in: navigation.exerciseId
+                segmentId: navigation.segmentId,
+                workoutId: navigation.workoutId,
             ) { set in
                 set.weight = weight
             }
@@ -43,8 +43,8 @@ struct SetEditView: View {
         .onChange(of: repetitions) {
             store.updateSet(
                 with: navigation.setId,
-                for: navigation.workoutId,
-                in: navigation.exerciseId
+                segmentId: navigation.segmentId,
+                workoutId: navigation.workoutId,
             ) { set in
                 set.repetitions = repetitions
             }
@@ -56,14 +56,14 @@ struct SetEditView: View {
 #Preview {
     let store = WorkoutStore.preview()
     let workout = store.workouts.first!
-    let exercise = store.exercises(for: workout.id)!.first!
-    let set = store.sets(for: workout.id, in: exercise.id)!.first!
+    let segment = store.segments(for: workout.id)!.first!
+    let set = store.sets(segmentId: segment.id, workoutId: workout.id)!.first!
     
     SetEditView(
         store: store,
         navigation: SetNavigation(
             workoutId: workout.id,
-            exerciseId: exercise.id,
+            segmentId: segment.id,
             setId: set.id
         )
     )

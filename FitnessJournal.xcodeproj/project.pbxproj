@@ -13,6 +13,7 @@
 /* Begin PBXFileReference section */
 		2D6B32CA2E6529AF00E7067B /* FitnessJournal.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FitnessJournal.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D6B32E82E652F6F00E7067B /* Modules */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Modules; sourceTree = "<group>"; };
+		2DD0444A2E8874AA00E858BB /* FitnessJournal.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = FitnessJournal.xctestplan; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -38,6 +39,7 @@
 		2D6B32C12E6529AF00E7067B = {
 			isa = PBXGroup;
 			children = (
+				2DD0444A2E8874AA00E858BB /* FitnessJournal.xctestplan */,
 				2D6B32E82E652F6F00E7067B /* Modules */,
 				2D6B32CC2E6529AF00E7067B /* FitnessJournal */,
 				2D6B32E92E65302000E7067B /* Frameworks */,

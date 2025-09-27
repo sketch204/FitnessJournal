@@ -39,7 +39,7 @@ struct WorkoutDateEditView: View {
         .onChange(of: date) {
             guard var workout = store.workout(with: workoutId) else { return }
             workout.date = date
-            store.updateWorkout(workout, createIfMissing: false)
+            store.updateWorkout(workout)
         }
     }
 }

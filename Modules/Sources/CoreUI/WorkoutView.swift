@@ -32,20 +32,20 @@ public struct WorkoutView: View {
             List {
                 dateLabel(workout)
                 
-                ForEach(workout.exercises) { exercise in
+                ForEach(workout.segments) { segment in
                     NavigationLink(
-                        value: ExerciseNavigation(
+                        value: SegmentNavigation(
                             workoutId: workoutId,
-                            exerciseId: exercise.id
+                            segmentId: segment.id
                         )
                     ) {
-                        ExerciseRow(exercise: exercise)
+                        SegmentRow(segment)
                     }
                 }
                 .onDelete { indexSet in
-                    indexSet.map{ workout.exercises[$0] }
-                        .forEach { exercise in
-                            store.deleteExercise(exercise, for: workoutId)
+                    indexSet.map{ workout.segments[$0] }
+                        .forEach { segment in
+                            store.deleteSegment(segment, for: workoutId)
                         }
                 }
                 
@@ -55,7 +55,7 @@ public struct WorkoutView: View {
                 .buttonStyle(.borderless)
             }
             .listStyle(.plain)
-            .animation(.default, value: workout.exercises.count)
+            .animation(.default, value: workout.segments.count)
             .navigationTitle("Workout")
             .sheet(isPresented: $isEditingDate) {
                 NavigationStack {
@@ -63,22 +63,19 @@ public struct WorkoutView: View {
                 }
                 .presentationDetents([.medium])
             }
-            .sheet(isPresented: $isAddingExercise) {
-                NavigationStack {
-                    ExerciseEditView(store: store, workoutId: workoutId) { exercise in
-                        print("Navigating to \(exercise.name)")
-                        appActions.perform(
-                            NavigateToExerciseAction(
-                                navigation: ExerciseNavigation(
-                                    workoutId: workoutId,
-                                    exerciseId: exercise.id
-                                )
-                            )
-                        )
-                    }
-                    .presentationDetents([.medium])
-                }
-            }
+//            .sheet(isPresented: $isAddingExercise) {
+//                NavigationStack {
+//                    SegmentEditView(store: store, workoutId: workoutId) { segment in
+//                        appActions.perform(
+//                            NavigateToSegmentAction(
+//                                workoutId: workoutId,
+//                                segmentId: segment.id
+//                            )
+//                        )
+//                    }
+//                    .presentationDetents([.medium])
+//                }
+//            }
         } else {
             ContentUnavailableView("Workout not found!", systemImage: "questionmark.circle.dashed")
         }
@@ -103,8 +100,8 @@ public struct WorkoutView: View {
             store: store,
             workoutId: workout.id
         )
-        .navigationDestination(for: ExerciseNavigation.self) { navigation in
-            ExerciseView(store: store, navigation: navigation)
+        .navigationDestination(for: SegmentNavigation.self) { navigation in
+            SegmentView(store: store, navigation: navigation)
         }
     }
 }

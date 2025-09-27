@@ -12,23 +12,23 @@ import Data
 
 struct SetNavigation: Hashable {
     let workoutId: Workout.ID
-    let exerciseId: Exercise.ID
-    let setId: Exercise.Set.ID
+    let segmentId: Segment.ID
+    let setId: Segment.Set.ID
 }
 
 // MARK: WorkoutStore Set Extension
 
 extension WorkoutStore {
-    func set(for navigation: SetNavigation) -> Exercise.Set? {
+    func set(for navigation: SetNavigation) -> Segment.Set? {
         set(
-            with: navigation.setId,
-            for: navigation.workoutId,
-            in: navigation.exerciseId
+            setId: navigation.setId,
+            segmentId: navigation.segmentId,
+            workoutId: navigation.workoutId,
         )
     }
     
-    func exercise(for navigation: SetNavigation) -> Exercise? {
-        exercise(with: navigation.exerciseId, for: navigation.workoutId)
+    func segment(for navigation: SetNavigation) -> Segment? {
+        segment(segmentId: navigation.segmentId, workoutId: navigation.workoutId)
     }
     
     func workout(for navigation: SetNavigation) -> Workout? {
@@ -36,27 +36,21 @@ extension WorkoutStore {
     }
 }
 
-// MARK: Exercise Navigation
+// MARK: Segment Navigation
 
-struct ExerciseNavigation: Hashable {
+struct SegmentNavigation: Hashable {
     let workoutId: Workout.ID
-    let exerciseId: Exercise.ID
+    let segmentId: Segment.ID
 }
 
 // MARK: WorkoutStore Exercise Extension
 
 extension WorkoutStore {
-    func exercise(for navigation: ExerciseNavigation) -> Exercise? {
-        exercise(with: navigation.exerciseId, for: navigation.workoutId)
+    func segment(for navigation: SegmentNavigation) -> Segment? {
+        segment(segmentId: navigation.segmentId, workoutId: navigation.workoutId)
     }
     
-    func workout(for navigation: ExerciseNavigation) -> Workout? {
+    func workout(for navigation: SegmentNavigation) -> Workout? {
         workout(with: navigation.workoutId)
     }
-}
-
-// MARK: SwiftUI Navigation
-
-struct Navigate {
-    
 }

@@ -1,5 +1,5 @@
 //
-//  ExerciseView.swift
+//  SegmentView.swift
 //  Modules
 //
 //  Created by Inal Gotov on 2025-08-31.
@@ -9,39 +9,36 @@ import Core
 import Data
 import SwiftUI
 
-struct ExerciseView: View {
+struct SegmentView: View {
     @Environment(\.dismiss) private var dismiss
     
     let store: WorkoutStore
-    let navigation: ExerciseNavigation
+    let navigation: SegmentNavigation
     
     var workout: Workout? {
-        store.workouts.first(where: { $0.id == navigation.workoutId })
+        store.workout(for: navigation)
     }
-    var exercise: Exercise? {
-        workout?.exercises.first(where: { $0.id == navigation.exerciseId })
+    var segment: Segment? {
+        store.segment(for: navigation)
     }
     
-    @State private var editedSet: Exercise.Set?
-    @State private var isEditingSet: Bool = false
+    @State private var editedSet: Segment.Set?
     
-    init(store: WorkoutStore, navigation: ExerciseNavigation) {
+    init(store: WorkoutStore, navigation: SegmentNavigation) {
         self.store = store
         self.navigation = navigation
-        
-        isEditingSet = exercise?.name.isEmpty ?? true
     }
     
     var body: some View {
-        if let workout, let exercise {
+        if let workout, let segment {
             List {
-                Button {
-                    isEditingSet = true
-                } label: {
-                    headerView(workout: workout, exercise: exercise)
-                }
+//                Button {
+//                    isEditingSet = true
+//                } label: {
+                    headerView(workout: workout, segment: segment)
+//                }
                 
-                ForEach(exercise.sets) { set in
+                ForEach(segment.sets) { set in
                     Button {
                         editedSet = set
                     } label: {
@@ -50,21 +47,21 @@ struct ExerciseView: View {
                 }
                 .onDelete { indexSet in
                     indexSet
-                        .map { exercise.sets[$0] }
+                        .map { segment.sets[$0] }
                         .forEach { set in
-                            store.deleteSet(set, in: exercise.id, for: workout.id)
+                            store.deleteSet(set, segmentId: segment.id, workoutId: workout.id)
                         }
                 }
                 
                 Button("Add Set") {
                     let newSet = newSet()
-                    store.createSet(newSet, in: exercise.id, for: workout.id)
+                    store.createSet(newSet, segmentId: segment.id, workoutId: workout.id)
                     editedSet = newSet
                 }
                 .buttonStyle(.borderless)
             }
             .listStyle(.plain)
-            .animation(.default, value: exercise.sets.count)
+            .animation(.default, value: segment.sets.count)
             .navigationTitle("Exercise")
             .sheet(item: $editedSet) { set in
                 NavigationStack {
@@ -72,27 +69,27 @@ struct ExerciseView: View {
                         store: store,
                         navigation: SetNavigation(
                             workoutId: navigation.workoutId,
-                            exerciseId: navigation.exerciseId,
+                            segmentId: navigation.segmentId,
                             setId: set.id
                         )
                     )
                 }
                 .presentationDetents([.medium, .large])
             }
-            .sheet(isPresented: $isEditingSet) {
-                NavigationStack {
-                    ExerciseEditView(store: store, navigation: navigation)
-                }
-                .presentationDetents([.medium, .large])
-            }
+//            .sheet(isPresented: $isEditingSet) {
+//                NavigationStack {
+//                    ExerciseEditView(store: store, navigation: navigation)
+//                }
+//                .presentationDetents([.medium, .large])
+//            }
         } else {
             ContentUnavailableView("Workout or exercise not found!", systemImage: "questionmark.circle.dashed")
         }
     }
     
-    private func headerView(workout: Workout, exercise: Exercise) -> some View {
+    private func headerView(workout: Workout, segment: Segment) -> some View {
         VStack(alignment: .leading) {
-            Text(exercise.name)
+            Text(segment.exercise.name)
                 .multilineTextAlignment(.leading)
                 .font(.title)
             
@@ -103,10 +100,10 @@ struct ExerciseView: View {
         }
     }
     
-    private func newSet() -> Exercise.Set {
-        let lastSet = exercise?.sets.last
+    private func newSet() -> Segment.Set {
+        let lastSet = segment?.sets.last
         
-        return Exercise.Set(
+        return Segment.Set(
             weight: lastSet?.weight ?? Weight(distribution: .total(50), units: .pounds),
             repetitions: lastSet?.repetitions ?? 8
         )
@@ -116,33 +113,33 @@ struct ExerciseView: View {
 #Preview("Default") {
     let store = WorkoutStore.preview()
     let workout = store.workouts.first!
-    let exercise = store.exercises(for: workout.id)!.first!
+    let segment = store.segments(for: workout.id)!.first!
     
     NavigationStack {
-        ExerciseView(
+        SegmentView(
             store: store,
             navigation: .init(
                 workoutId: workout.id,
-                exerciseId: exercise.id
+                segmentId: segment.id
             )
         )
     }
 }
 
 #Preview("Empty Exercise") {
-    let exercise = Exercise(name: "Squats", sets: [])
+    let segment = Segment(exercise: Exercise(name: "Squats"), sets: [])
     
     let store = WorkoutStore.preview {
-        $0.createExercise(exercise, for: $0.workouts.first!.id)
+        $0.createSegment(segment, for: $0.workouts.first!.id)
     }
     let workout = store.workouts.first!
     
     NavigationStack {
-        ExerciseView(
+        SegmentView(
             store: store,
             navigation: .init(
                 workoutId: workout.id,
-                exerciseId: exercise.id
+                segmentId: segment.id
             )
         )
     }
