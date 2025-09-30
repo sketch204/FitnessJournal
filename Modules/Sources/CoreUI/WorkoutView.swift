@@ -93,8 +93,24 @@ public struct WorkoutView: View {
 }
 
 #Preview("Default") {
-    let store = WorkoutStore.preview()
-    let workout = store.workouts.first!
+    let workout = Workout.sample
+    let store = WorkoutStore.preview(workouts: [workout])
+    
+    NavigationStack {
+        WorkoutView(
+            store: store,
+            workoutId: workout.id
+        )
+        .navigationDestination(for: SegmentNavigation.self) { navigation in
+            SegmentView(store: store, navigation: navigation)
+        }
+        .environment(\.appActions, AppActions())
+    }
+}
+
+#Preview("Empty Workout") {
+    let workout = Workout()
+    let store = WorkoutStore.preview(workouts: [workout])
     
     NavigationStack {
         WorkoutView(

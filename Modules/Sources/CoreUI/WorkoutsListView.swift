@@ -30,6 +30,11 @@ public struct WorkoutsListView: View {
                     }
             }
         }
+        .background {
+            if workouts.isEmpty {
+                ContentUnavailableView("No Workouts Yet", systemImage: "dumbbell.fill", description: Text("Add your first workout by tapping the button below."))
+            }
+        }
         .animation(.default, value: store.workouts.count)
         .overlay(alignment: .bottom, content: {
             Button(action: addNewWorkout) {
@@ -50,8 +55,14 @@ public struct WorkoutsListView: View {
     }
 }
 
-#Preview {
+#Preview("Default") {
     NavigationStack {
         WorkoutsListView(store: .preview())
+    }
+}
+
+#Preview("No workouts") {
+    NavigationStack {
+        WorkoutsListView(store: .preview(workouts: []))
     }
 }
