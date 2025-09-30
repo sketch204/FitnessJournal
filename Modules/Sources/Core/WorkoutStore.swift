@@ -23,11 +23,7 @@ public protocol WorkoutStorePersistor: Sendable {
 public final class WorkoutStore {
     private var persistor: WorkoutStorePersistor
     
-    public private(set) var exercises: [Exercise] = [] {
-        didSet {
-            saveExercises(exercises: exercises)
-        }
-    }
+    public private(set) var exercises: [Exercise] = []
     public private(set) var workouts: [Workout] = [] {
         didSet {
             saveWorkouts(workouts: workouts)
@@ -135,6 +131,7 @@ extension WorkoutStore {
     @discardableResult
     public func createWorkout(_ workout: Workout = Workout()) -> Workout {
         workouts.append(workout)
+        saveWorkouts(workouts: workouts)
         return workout
     }
     
@@ -145,6 +142,7 @@ extension WorkoutStore {
         }
         
         workouts[index] = workout
+        saveWorkouts(workouts: workouts)
         return workout
     }
     
@@ -166,6 +164,7 @@ extension WorkoutStore {
     
     public func deleteWorkout(_ workoutId: Workout.ID) {
         workouts.removeAll(where: { $0.id == workoutId })
+        saveWorkouts(workouts: workouts)
     }
 }
 
@@ -178,6 +177,7 @@ extension WorkoutStore {
             return nil
         }
         workouts[index].segments.append(segment)
+        saveWorkouts(workouts: workouts)
         return segment
     }
     
@@ -191,6 +191,7 @@ extension WorkoutStore {
         }
         
         workouts[workoutIndex].segments[segmentIndex] = segment
+        saveWorkouts(workouts: workouts)
         return segment
     }
     
@@ -217,6 +218,7 @@ extension WorkoutStore {
     public func deleteSegment(_ segmentId: Segment.ID, for workoutId: Workout.ID) {
         guard let index = workouts.firstIndex(where: { $0.id == workoutId }) else { return }
         workouts[index].segments.removeAll(where: { $0.id == segmentId })
+        saveWorkouts(workouts: workouts)
     }
 }
 
@@ -233,6 +235,7 @@ extension WorkoutStore {
         }
         
         workouts[workoutIndex].segments[segmentIndex].sets.append(set)
+        saveWorkouts(workouts: workouts)
         return set
     }
     
@@ -251,6 +254,7 @@ extension WorkoutStore {
         }
 
         workouts[workoutIndex].segments[segmentIndex].sets[setIndex] = set
+        saveWorkouts(workouts: workouts)
         return set
     }
     
@@ -284,6 +288,7 @@ extension WorkoutStore {
             return
         }
         workouts[workoutIndex].segments[segmentIndex].sets.removeAll(where: { $0.id == setId })
+        saveWorkouts(workouts: workouts)
     }
 }
 
@@ -303,6 +308,7 @@ extension WorkoutStore {
     @discardableResult
     public func createExercise(_ exercise: Exercise) -> Exercise? {
         exercises.append(exercise)
+        saveExercises(exercises: exercises)
         return exercise
     }
     
@@ -314,6 +320,9 @@ extension WorkoutStore {
         
         exercises[exerciseIndex] = exercise
         updateSegments(using: exercise)
+        
+        saveExercises(exercises: exercises)
+        saveWorkouts(workouts: workouts)
         
         return exercise
     }
@@ -350,6 +359,7 @@ extension WorkoutStore {
             return
         }
         exercises.removeAll(where: { $0.id == exerciseId })
+        saveExercises(exercises: exercises)
     }
     
     // MARK: Helpers
