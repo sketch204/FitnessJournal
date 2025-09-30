@@ -11,11 +11,29 @@ import SwiftUI
 
 @main
 struct FitnessJournalApp: App {
-    let store = WorkoutStore.preview()
+    @AppStorage("__dataStore") private var dataStore: PersistenceType = .file
+    var persistor: WorkoutStorePersistor {
+        switch dataStore {
+        case .file: .file
+        case .memory: .memory
+        case .preview: .preview()
+        }
+    }
+    
+    @State var store: WorkoutStore?
     
     var body: some Scene {
         WindowGroup {
-            RootView(workoutStore: store)
+            Group {
+                if let store {
+                    RootView(workoutStore: store)
+                } else {
+                    ProgressView()
+                }
+            }
+            .onAppear {
+                store = WorkoutStore(persistor: persistor)
+            }
         }
     }
 }

@@ -47,17 +47,17 @@ public actor MemoryWorkoutStorePersistor: WorkoutStorePersistor {
 }
 
 extension WorkoutStorePersistor where Self == MemoryWorkoutStorePersistor {
-    static var memory: Self {
+    public static var memory: Self {
         .memory()
     }
     
-    static func memory(workouts: [Workout] = [], exercises: [Exercise] = []) -> Self {
+    public static func memory(workouts: [Workout] = [], exercises: [Exercise] = []) -> Self {
         MemoryWorkoutStorePersistor(workouts: workouts, exercises: exercises)
     }
     
 #if DEBUG
     
-    static func preview(
+    public static func preview(
         workouts: [Workout] = [.sample],
         extraExercises: [Exercise] = [],
     ) -> Self {
