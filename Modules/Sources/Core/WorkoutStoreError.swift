@@ -7,7 +7,7 @@
 
 import Data
 
-public enum WorkoutStoreError: Error {
+public enum WorkoutStoreError: Error, Equatable, Hashable, Sendable {
     case exerciseUsedInSegments(Exercise)
 }
 

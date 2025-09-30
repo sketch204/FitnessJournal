@@ -24,7 +24,7 @@ public struct WorkoutsListView: View {
                 }
             }
             .onDelete { indexSet in
-                indexSet.map({ store.workouts[$0] })
+                indexSet.map({ workouts[$0] })
                     .forEach { workout in
                         store.deleteWorkout(workout)
                     }

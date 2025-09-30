@@ -8,19 +8,79 @@
 import Data
 import Foundation
 
+public protocol WorkoutStorePersistor: Sendable {
+    func loadWorkouts() async throws -> [Workout]
+    func saveWorkouts(_ workouts: [Workout]) async throws
+    
+    func loadExercises() async throws -> [Exercise]
+    func saveExercises(_ exercises: [Exercise]) async throws
+}
+
 // MARK: WorkoutStore
 
+@MainActor
 @Observable
 public final class WorkoutStore {
-    public private(set) var exercises: [Exercise] = []
-    public private(set) var workouts: [Workout] = []
+    private var persistor: WorkoutStorePersistor
+    
+    public private(set) var exercises: [Exercise] = [] {
+        didSet {
+            saveExercises(exercises: exercises)
+        }
+    }
+    public private(set) var workouts: [Workout] = [] {
+        didSet {
+            saveWorkouts(workouts: workouts)
+        }
+    }
     
     public init(
-        exercises: [Exercise] = [],
-        workouts: [Workout] = []
+        persistor: WorkoutStorePersistor,
     ) {
-        self.exercises = exercises
-        self.workouts = workouts
+        self.persistor = persistor
+        
+        loadWorkouts()
+        loadExercises()
+    }
+    
+    private func loadWorkouts() {
+        Task {
+            do {
+                workouts = try await persistor.loadWorkouts()
+            } catch {
+                Log.core.critical("Failed to load workouts due to error! \(error)")
+            }
+        }
+    }
+    
+    private func saveWorkouts(workouts: [Workout]) {
+        Task {
+            do {
+                try await persistor.saveWorkouts(workouts)
+            } catch {
+                Log.core.critical("Failed to save workouts due to error! \(error)")
+            }
+        }
+    }
+    
+    private func loadExercises() {
+        Task {
+            do {
+                exercises = try await persistor.loadExercises()
+            } catch {
+                Log.core.critical("Failed to load exercises due to error! \(error)")
+            }
+        }
+    }
+    
+    private func saveExercises(exercises: [Exercise]) {
+        Task {
+            do {
+                try await persistor.saveExercises(exercises)
+            } catch {
+                Log.core.critical("Failed to save exercises due to error! \(error)")
+            }
+        }
     }
     
     public func workout(with workoutId: Workout.ID) -> Workout? {

@@ -13,9 +13,12 @@ public extension WorkoutStore {
         extraExercises: [Exercise] = [],
         executing setup: ((WorkoutStore) -> Void)? = nil
     ) -> Self {
-        let exercises = Set(workouts.flatMap({ $0.segments.map(\.exercise) }))
-        
-        let output = Self(exercises: Array(exercises) + extraExercises, workouts: workouts)
+        let output = Self(
+            persistor: .preview(
+                workouts: workouts,
+                extraExercises: extraExercises
+            )
+        )
         setup?(output)
         return output
     }
