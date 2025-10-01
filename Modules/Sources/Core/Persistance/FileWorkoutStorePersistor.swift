@@ -62,7 +62,8 @@ public actor FileWorkoutStorePersistor: WorkoutStorePersistor {
             Log.core.critical("Could not save workouts because no data was loaded!")
             return
         }
-        try saveData(DataWrapper(workouts: workouts, exercises: data.exercises))
+        self.data = DataWrapper(workouts: workouts, exercises: data.exercises)
+        try saveData(self.data!)
     }
     
     public func loadExercises() async throws -> [Exercise] {
@@ -74,7 +75,8 @@ public actor FileWorkoutStorePersistor: WorkoutStorePersistor {
             Log.core.critical("Could not save exercises because no data was loaded!")
             return
         }
-        try saveData(DataWrapper(workouts: data.workouts, exercises: exercises))
+        self.data = DataWrapper(workouts: data.workouts, exercises: exercises)
+        try saveData(self.data!)
     }
 }
 
