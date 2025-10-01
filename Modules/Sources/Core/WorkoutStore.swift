@@ -24,11 +24,7 @@ public final class WorkoutStore {
     private var persistor: WorkoutStorePersistor
     
     public private(set) var exercises: [Exercise] = []
-    public private(set) var workouts: [Workout] = [] {
-        didSet {
-            saveWorkouts(workouts: workouts)
-        }
-    }
+    public private(set) var workouts: [Workout] = []
     
     public init(
         persistor: WorkoutStorePersistor,

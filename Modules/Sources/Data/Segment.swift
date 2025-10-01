@@ -33,7 +33,7 @@ public struct Segment: Hashable, Codable, Sendable, Identifiable {
 
 extension Segment {
     public var displayWeight: Weight? {
-        commonWeight ?? sets.max(by: { $0.weight.totalWeight > $1.weight.totalWeight })?.weight
+        commonWeight ?? sets.max(by: { $0.weight.totalWeight < $1.weight.totalWeight })?.weight
     }
     
     public var commonWeight: Weight? {

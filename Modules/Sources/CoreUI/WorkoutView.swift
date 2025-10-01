@@ -28,6 +28,7 @@ public struct WorkoutView: View {
         if let workout {
             List {
                 dateLabel(workout)
+                    .listRowSeparator(.hidden, edges: .top)
                 
                 ForEach(workout.segments) { segment in
                     NavigationLink(
@@ -46,10 +47,14 @@ public struct WorkoutView: View {
                         }
                 }
                 
-                Button("Add Segment") {
+                Button {
                     appActions.perform(SelectExerciseAction { exercise in
                         createSegment(with: exercise)
                     })
+                } label: {
+                    Text("Add Segment")
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.borderless)
             }
@@ -73,6 +78,8 @@ public struct WorkoutView: View {
             appActions.perform(EditWorkoutAction(workoutId: workout.id))
         } label: {
             Text(workout.date, format: .relative(presentation: .named))
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }
@@ -90,8 +97,10 @@ public struct WorkoutView: View {
         .navigationDestination(for: SegmentNavigation.self) { navigation in
             SegmentView(store: store, navigation: navigation)
         }
-        .environment(\.appActions, AppActions())
+        .registerEditWorkoutHandler(store: store)
+        .registerSelectExerciseHandler(store: store)
     }
+    .environment(\.appActions, AppActions())
 }
 
 #Preview("Empty Workout") {
@@ -106,6 +115,8 @@ public struct WorkoutView: View {
         .navigationDestination(for: SegmentNavigation.self) { navigation in
             SegmentView(store: store, navigation: navigation)
         }
-        .environment(\.appActions, AppActions())
+        .registerEditWorkoutHandler(store: store)
+        .registerSelectExerciseHandler(store: store)
     }
+    .environment(\.appActions, AppActions())
 }

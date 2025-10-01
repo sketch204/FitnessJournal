@@ -61,8 +61,12 @@ struct SegmentView: View {
                         }
                 }
                 
-                Button("Add Set") {
+                Button {
                     addNewSet()
+                } label: {
+                    Text("Add Set")
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.borderless)
             }
@@ -75,14 +79,21 @@ struct SegmentView: View {
     }
     
     private func headerView(workout: Workout, segment: Segment) -> some View {
-        VStack(alignment: .leading) {
-            Text(segment.exercise.name)
-                .multilineTextAlignment(.leading)
-                .font(.title)
+        HStack {
+            VStack(alignment: .leading) {
+                Text(segment.exercise.name)
+                    .multilineTextAlignment(.leading)
+                    .font(.title)
+                
+                Text(workout.date, format: .dateTime)
+                    .multilineTextAlignment(.leading)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
             
-            Text(workout.date, format: .dateTime)
-                .multilineTextAlignment(.leading)
-                .font(.subheadline)
+            Spacer()
+            
+            Image(systemName: "chevron.right")
                 .foregroundStyle(.secondary)
         }
     }
@@ -127,9 +138,9 @@ struct SegmentView: View {
 }
 
 #Preview("Default") {
-    let store = WorkoutStore.preview()
-    let workout = store.workouts.first!
-    let segment = store.segments(for: workout.id)!.first!
+    let workout = Workout.sample
+    let segment = workout.segments.first!
+    let store = WorkoutStore.preview(workouts: [workout])
     
     NavigationStack {
         SegmentView(
@@ -139,16 +150,17 @@ struct SegmentView: View {
                 segmentId: segment.id
             )
         )
+        .registerEditSetHandler(store: store)
     }
+    .environment(\.appActions, AppActions())
 }
 
 #Preview("Empty Exercise") {
+    let workout = Workout.sample
     let segment = Segment(exercise: Exercise(name: "Squats"), sets: [])
-    
-    let store = WorkoutStore.preview {
+    let store = WorkoutStore.preview(workouts: [workout]) {
         $0.createSegment(segment, for: $0.workouts.first!.id)
     }
-    let workout = store.workouts.first!
     
     NavigationStack {
         SegmentView(
@@ -158,5 +170,7 @@ struct SegmentView: View {
                 segmentId: segment.id
             )
         )
+        .registerEditSetHandler(store: store)
     }
+    .environment(\.appActions, AppActions())
 }
