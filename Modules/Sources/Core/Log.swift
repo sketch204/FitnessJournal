@@ -8,5 +8,5 @@
 import os
 
 enum Log {
-    static let core = Logger(subsystem: "com.sketch204.FitnessJournal", category: "Core")
+    nonisolated static let core = Logger(subsystem: "com.sketch204.FitnessJournal", category: "Core")
 }

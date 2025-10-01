@@ -7,10 +7,12 @@
 
 import Data
 
+@MainActor
 public enum WorkoutStoreError: Error, Equatable, Hashable, Sendable {
     case exerciseUsedInSegments(Exercise)
 }
 
+@MainActor
 extension WorkoutStoreError: CustomStringConvertible {
     public var description: String {
         switch self {

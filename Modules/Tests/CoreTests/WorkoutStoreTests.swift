@@ -15,38 +15,19 @@ private func requireStoreLoad(_ persistor: MemoryWorkoutStorePersistor) async th
 }
 
 private func expectToEventuallySaveWorkouts(_ persistor: MemoryWorkoutStorePersistor) async {
-    func didSave() async -> Bool {
-        await persistor.events.contains {
-            if case .saveWorkouts = $0 {
-                return true
-            }
-            return false
-        }
-    }
-    
-    while await !didSave() {
+    while await !persistor.events.contains(.saveWorkouts) {
         await Task.yield()
     }
-    #expect(await didSave())
+    #expect(await persistor.events.contains(.saveWorkouts))
 }
 
 private func expectToEventuallySaveExercises(_ persistor: MemoryWorkoutStorePersistor) async {
-    func didSave() async -> Bool {
-        await persistor.events.contains {
-            if case .saveExercises = $0 {
-                return true
-            }
-            return false
-        }
-    }
-    
-    while await !didSave() {
+    while await !persistor.events.contains(.saveExercises) {
         await Task.yield()
     }
-    #expect(await didSave())
+    #expect(await persistor.events.contains(.saveExercises))
 }
 
-@MainActor
 @Suite("WorkoutStore")
 struct WorkoutStoreTests {
     let sampleWorkout: Workout
@@ -84,7 +65,6 @@ struct WorkoutStoreTests {
 // MARK: Workout CRUD
  
 extension WorkoutStoreTests {
-    @MainActor
     @Suite("Workout CRUD")
     struct WorkoutCRUD {
         let sampleWorkout: Workout
@@ -171,7 +151,6 @@ extension WorkoutStoreTests {
 // MARK: Segments CRUD
 
 extension WorkoutStoreTests {
-    @MainActor
     @Suite("Segments CRUD")
     struct SegmentsCRUD {
         let sampleWorkout: Workout
@@ -265,7 +244,6 @@ extension WorkoutStoreTests {
 // MARK: Sets CRUD
 
 extension WorkoutStoreTests {
-    @MainActor
     @Suite("Sets CRUD")
     struct SetsCRUD {
         let sampleWorkout: Workout
@@ -369,7 +347,6 @@ extension WorkoutStoreTests {
 // MARK: Exercises CRUD
  
 extension WorkoutStoreTests {
-    @MainActor
     @Suite("Exercises CRUD")
     class ExercisesCRUD {
         let sampleExercise: Exercise

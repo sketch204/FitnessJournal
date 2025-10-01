@@ -30,7 +30,7 @@ struct ExerciseView: View {
             .map { (key: Date, value: [Segment.Set]) in
                 Section(date: key, sets: value)
             }
-            .sorted(using: KeyPathComparator(\.date, order: .reverse))
+            .sorted { $0.date > $1.date }
     }
     
     var chartData: [(x: Date, y: Double)] {

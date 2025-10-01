@@ -10,9 +10,9 @@ import Data
 public actor MemoryWorkoutStorePersistor: WorkoutStorePersistor {
     public enum Event: Hashable, Sendable {
         case loadWorkouts
-        case saveWorkouts([Workout])
+        case saveWorkouts
         case loadExercises
-        case saveExercises([Exercise])
+        case saveExercises
     }
     
     public private(set) var events: [Event] = []
@@ -31,7 +31,7 @@ public actor MemoryWorkoutStorePersistor: WorkoutStorePersistor {
     }
     
     public func saveWorkouts(_ workouts: [Data.Workout]) async throws {
-        events.append(.saveWorkouts(workouts))
+        events.append(.saveWorkouts)
         self.workouts = workouts
     }
     
@@ -41,7 +41,7 @@ public actor MemoryWorkoutStorePersistor: WorkoutStorePersistor {
     }
     
     public func saveExercises(_ exercises: [Data.Exercise]) async throws {
-        events.append(.saveExercises(exercises))
+        events.append(.saveExercises)
         self.exercises = exercises
     }
 }

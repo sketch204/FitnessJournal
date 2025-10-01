@@ -18,7 +18,6 @@ public protocol WorkoutStorePersistor: Sendable {
 
 // MARK: WorkoutStore
 
-@MainActor
 @Observable
 public final class WorkoutStore {
     private var persistor: WorkoutStorePersistor

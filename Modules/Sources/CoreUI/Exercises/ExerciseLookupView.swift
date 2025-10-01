@@ -31,7 +31,7 @@ struct ExerciseLookupView: View {
     private var filteredExercises: [Exercise] {
         guard !searchString.isEmpty else {
             return store.exercises
-                .sorted(using: KeyPathComparator(\.name))
+                .sorted { $0.name < $1.name }
         }
         let tokens = searchString.split(separator: " ")
             .map { $0.lowercased() }
@@ -42,7 +42,7 @@ struct ExerciseLookupView: View {
                     exercise.name.lowercased().contains($0)
                 })
             }
-            .sorted(using: KeyPathComparator(\.name))
+            .sorted { $0.name < $1.name }
     }
     
     init(store: WorkoutStore, onSelect: @escaping (Exercise) -> Void) {

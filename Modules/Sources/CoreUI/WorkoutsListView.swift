@@ -9,7 +9,7 @@ public struct WorkoutsListView: View {
     
     var workouts: [Workout] {
         store.workouts
-            .sorted(using: KeyPathComparator(\.date, order: .reverse))
+            .sorted { $0.date > $1.date }
     }
     
     init(store: WorkoutStore) {

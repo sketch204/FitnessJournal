@@ -1,4 +1,4 @@
-// swift-tools-version: 6.1
+// swift-tools-version: 6.2
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -13,12 +13,12 @@ let package = Package(
             targets: ["Core", "CoreUI", "Data"]),
     ],
     targets: [
-        .target(name: "Core", dependencies: ["Data"]),
-        .target(name: "CoreUI", dependencies: ["Core", "Data"]),
-        .target(name: "Data"),
+        target(name: "Core", dependencies: ["Data"]),
+        target(name: "CoreUI", dependencies: ["Core", "Data"]),
+        target(name: "Data"),
         
         
-        .testTarget(
+        testTarget(
             name: "CoreTests",
             dependencies: ["Core", "Data"]
         ),
@@ -28,3 +28,27 @@ let package = Package(
 //        )
     ]
 )
+
+func target(name: String, dependencies: [Target.Dependency] = []) -> Target {
+    .target(
+        name: name,
+        dependencies: dependencies,
+        swiftSettings: [
+            .defaultIsolation(MainActor.self),
+            .enableUpcomingFeature("NonisolatedNonsendingByDefault"),
+            .enableUpcomingFeature("InferIsolatedConformances"),
+        ]
+    )
+}
+
+func testTarget(name: String, dependencies: [Target.Dependency] = []) -> Target {
+    .testTarget(
+        name: name,
+        dependencies: dependencies,
+        swiftSettings: [
+            .defaultIsolation(MainActor.self),
+            .enableUpcomingFeature("NonisolatedNonsendingByDefault"),
+            .enableUpcomingFeature("InferIsolatedConformances"),
+        ]
+    )
+}
