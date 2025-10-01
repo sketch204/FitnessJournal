@@ -11,6 +11,7 @@ import SwiftUI
 
 struct SegmentView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.appActions) private var appActions
     
     let store: WorkoutStore
     let navigation: SegmentNavigation
@@ -22,9 +23,6 @@ struct SegmentView: View {
         store.segment(for: navigation)
     }
     
-    @State private var isEditingSegment: Bool = false
-    @State private var editedSet: Segment.Set?
-    
     init(store: WorkoutStore, navigation: SegmentNavigation) {
         self.store = store
         self.navigation = navigation
@@ -34,14 +32,16 @@ struct SegmentView: View {
         if let workout, let segment {
             List {
                 Button {
-                    isEditingSegment = true
+                    appActions.perform(SelectExerciseAction { exercise in
+                        updateSegment(with: exercise)
+                    })
                 } label: {
                     headerView(workout: workout, segment: segment)
                 }
                 
                 ForEach(segment.sets) { set in
                     Button {
-                        editedSet = set
+                        editSet(setId: set.id)
                     } label: {
                         SetRow(store: store, set: set)
                     }
@@ -62,27 +62,6 @@ struct SegmentView: View {
             .listStyle(.plain)
             .animation(.default, value: segment.sets.count)
             .navigationTitle("Segment")
-            .sheet(item: $editedSet) { set in
-                NavigationStack {
-                    SetEditView(
-                        store: store,
-                        navigation: SetNavigation(
-                            workoutId: navigation.workoutId,
-                            segmentId: navigation.segmentId,
-                            setId: set.id
-                        )
-                    )
-                }
-                .presentationDetents([.medium, .large])
-            }
-            .sheet(isPresented: $isEditingSegment) {
-                NavigationStack {
-                    ExerciseLookupView(store: store) { exercise in
-                        updateSegment(with: exercise)
-                    }
-                }
-                .presentationDetents([.medium, .large])
-            }
         } else {
             ContentUnavailableView("Workout or exercise not found!", systemImage: "questionmark.circle.dashed")
         }
@@ -117,7 +96,17 @@ struct SegmentView: View {
             segmentId: navigation.segmentId,
             workoutId: navigation.workoutId
         )
-        editedSet = newSet
+        editSet(setId: newSet.id)
+    }
+    
+    private func editSet(setId: Segment.Set.ID) {
+        appActions.perform(
+            EditSetAction(
+                workoutId: navigation.workoutId,
+                segmentId: navigation.segmentId,
+                setId: setId
+            )
+        )
     }
     
     private func newSet() -> Segment.Set {

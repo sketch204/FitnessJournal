@@ -15,8 +15,6 @@ public struct WorkoutView: View {
     public let store: WorkoutStore
     public let workoutId: Workout.ID
     
-    @State private var isEditingDate: Bool = false
-    
     var workout: Workout? {
         store.workouts.first(where: { $0.id == workoutId })
     }
@@ -58,12 +56,6 @@ public struct WorkoutView: View {
             .listStyle(.plain)
             .animation(.default, value: workout.segments.count)
             .navigationTitle("Workout")
-            .sheet(isPresented: $isEditingDate) {
-                NavigationStack {
-                    WorkoutDateEditView(store: store, workoutId: workoutId)
-                }
-                .presentationDetents([.medium])
-            }
         } else {
             ContentUnavailableView("Workout not found!", systemImage: "questionmark.circle.dashed")
         }
@@ -78,7 +70,7 @@ public struct WorkoutView: View {
     
     private func dateLabel(_ workout: Workout) -> some View {
         Button {
-            isEditingDate = true
+            appActions.perform(EditWorkoutAction(workoutId: workout.id))
         } label: {
             Text(workout.date, format: .relative(presentation: .named))
         }
