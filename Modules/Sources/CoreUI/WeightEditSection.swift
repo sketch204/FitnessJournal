@@ -9,6 +9,11 @@ import Data
 import SwiftUI
 
 struct WeightEditSection: View {
+    private enum Field {
+        case mainWeight
+        case barWeight
+    }
+    
     private enum Distribution: Hashable {
         case total
         case dumbbell
@@ -18,8 +23,13 @@ struct WeightEditSection: View {
     @Binding var weight: Weight
     
     @State private var distribution: Distribution
-    @State private var mainWeight: Double
-    @State private var barWeight: Double
+    
+    @FocusState private var focusedField: Field?
+    @State private var mainWeight: Double?
+    @State private var previousMainWeight: Double
+    
+    @State private var barWeight: Double?
+    @State private var previousBarWeight: Double
     
     init(weight: Binding<Weight>) {
         _weight = weight
@@ -28,15 +38,21 @@ struct WeightEditSection: View {
         case .total(let totalWeight):
             _distribution = State(initialValue: .total)
             _mainWeight = State(initialValue: totalWeight)
+            _previousMainWeight = State(initialValue: totalWeight)
             _barWeight = State(initialValue: 45)
+            _previousBarWeight = State(initialValue: 45)
         case .dumbbell(let totalWeight):
             _distribution = State(initialValue: .dumbbell)
             _mainWeight = State(initialValue: totalWeight)
+            _previousMainWeight = State(initialValue: totalWeight)
             _barWeight = State(initialValue: 45)
+            _previousBarWeight = State(initialValue: 45)
         case .barbell(let plates, let bar):
             _distribution = State(initialValue: .barbell)
             _mainWeight = State(initialValue: plates)
+            _previousMainWeight = State(initialValue: plates)
             _barWeight = State(initialValue: bar)
+            _previousBarWeight = State(initialValue: bar)
         }
     }
     
@@ -53,16 +69,38 @@ struct WeightEditSection: View {
             .pickerStyle(.segmented)
             
             LabeledContent("Weight") {
-                TextField("Weight", value: $mainWeight, format: .number)
-                    .keyboardType(.decimalPad)
-                    .multilineTextAlignment(.trailing)
+                TextField(
+                    "Weight",
+                    value: $mainWeight,
+                    format: .number,
+                    prompt: Text(previousMainWeight, format: .number)
+                )
+                .keyboardType(.decimalPad)
+                .multilineTextAlignment(.trailing)
+                .focused($focusedField, equals: .mainWeight)
+                .onSubmit {
+                    if distribution == .barbell {
+                        focusedField = .barWeight
+                    } else {
+                        focusedField = nil
+                    }
+                }
             }
             
             if distribution == .barbell {
                 LabeledContent("Bar Weight") {
-                    TextField("Bar Weight", value: $barWeight, format: .number)
-                        .keyboardType(.decimalPad)
-                        .multilineTextAlignment(.trailing)
+                    TextField(
+                        "Bar Weight",
+                        value: $barWeight,
+                        format: .number,
+                        prompt: Text(previousBarWeight, format: .number)
+                    )
+                    .keyboardType(.decimalPad)
+                    .multilineTextAlignment(.trailing)
+                    .focused($focusedField, equals: .barWeight)
+                    .onSubmit {
+                        focusedField = nil
+                    }
                 }
             }
             
@@ -74,7 +112,35 @@ struct WeightEditSection: View {
             }
             .pickerStyle(.menu)
         }
+        .onChange(of: focusedField) { oldValue, newValue in
+            switch oldValue {
+            case .mainWeight where mainWeight == nil:
+                mainWeight = previousMainWeight
+            case .barWeight where barWeight == nil:
+                barWeight = previousBarWeight
+            case .none:
+                if let mainWeight {
+                    previousMainWeight = mainWeight
+                }
+                if let barWeight {
+                    previousBarWeight = barWeight
+                }
+            default:
+                break
+            }
+            
+            switch newValue {
+            case .mainWeight:
+                mainWeight = nil
+            case .barWeight:
+                barWeight = nil
+            case nil:
+                break
+            }
+        }
         .onChange(of: mainWeight) {
+            guard let mainWeight else { return }
+            
             switch weight.distribution {
             case .total:
                 weight.distribution = .total(mainWeight)
@@ -85,6 +151,8 @@ struct WeightEditSection: View {
             }
         }
         .onChange(of: barWeight) {
+            guard let barWeight else { return }
+            
             switch weight.distribution {
             case .total, .dumbbell:
                 break
@@ -93,6 +161,7 @@ struct WeightEditSection: View {
             }
         }
         .onChange(of: distribution) {
+            guard let mainWeight, let barWeight else { return }
             switch distribution {
             case .total:
                 weight.distribution = .total(mainWeight)
@@ -107,7 +176,7 @@ struct WeightEditSection: View {
 
 #Preview {
     @Previewable @State var weight = Weight(
-        distribution: .dumbbell(50),
+        distribution: .barbell(plates: 45, bar: 50),
         units: .pounds
     )
     
