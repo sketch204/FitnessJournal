@@ -16,7 +16,7 @@ public struct WorkoutView: View {
     public let workoutId: Workout.ID
     
     var workout: Workout? {
-        store.workouts.first(where: { $0.id == workoutId })
+        store.workout(with: workoutId)
     }
     
     public init(store: WorkoutStore, workoutId: Workout.ID) {

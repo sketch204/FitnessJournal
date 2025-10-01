@@ -24,6 +24,7 @@ public struct RootView: View {
             WorkoutsListView(store: store)
                 .registerWorkoutNavigationHandler(store: store, path: $navigationPath)
                 .registerSegmentNavigationHandler(store: store, path: $navigationPath)
+                .registerExerciseNavigationHandler(store: store, path: $navigationPath)
                 .registerSelectExerciseHandler(store: store)
                 .registerEditWorkoutHandler(store: store)
                 .registerEditSetHandler(store: store)

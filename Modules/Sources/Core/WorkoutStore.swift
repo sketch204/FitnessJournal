@@ -295,13 +295,42 @@ extension WorkoutStore {
 // MARK: - Exercises
 
 extension WorkoutStore {
+    public func maxWeight(for exerciseId: Exercise.ID) -> Weight? {
+        workouts
+            .compactMap { workout -> Weight? in
+                let filteredSegments = workout.segments.filter({ $0.exercise.id == exerciseId })
+                guard !filteredSegments.isEmpty else { return nil }
+                return filteredSegments
+                    .flatMap(\.sets)
+                    .map(\.weight)
+                    .max {
+                        $0.totalWeight < $1.totalWeight
+                    }
+            }
+            .max {
+                $0.totalWeight < $1.totalWeight
+            }
+    }
+    
+    public func sets(with exerciseId: Exercise.ID) -> [Date: [Segment.Set]] {
+        workouts
+            .compactMap { workout -> (date: Date, sets: [Segment.Set])? in
+                let filteredSegments = workout.segments.filter({ $0.exercise.id == exerciseId })
+                guard !filteredSegments.isEmpty else { return nil }
+                return (workout.date, filteredSegments.flatMap(\.sets))
+            }
+            .reduce(into: [Date: [Segment.Set]]()) { partialResult, pair in
+                partialResult[pair.date] = pair.sets
+            }
+    }
+    
     public func segments(with exerciseId: Exercise.ID) -> [Segment] {
         workouts.flatMap { workout in
             workout.segments.filter { $0.exercise.id == exerciseId }
         }
     }
     
-    public func exercise(for exerciseId: Exercise.ID) -> Exercise? {
+    public func exercise(with exerciseId: Exercise.ID) -> Exercise? {
         exercises.first(where: { $0.id == exerciseId })
     }
     
@@ -332,7 +361,7 @@ extension WorkoutStore {
         with exerciseId: Exercise.ID,
         update: (inout Exercise) -> Void
     ) -> Exercise? {
-        guard var exercise = exercise(for: exerciseId) else {
+        guard var exercise = exercise(with: exerciseId) else {
             return nil
         }
         update(&exercise)
@@ -353,7 +382,7 @@ extension WorkoutStore {
     
     public func deleteExercise(_ exerciseId: Exercise.ID) throws(WorkoutStoreError) {
         guard canDeleteExercise(exerciseId) else {
-            if let exercise = exercise(for: exerciseId) {
+            if let exercise = exercise(with: exerciseId) {
                 throw WorkoutStoreError.exerciseUsedInSegments(exercise)
             }
             return

@@ -2,51 +2,38 @@
 //  NavigateToExerciseAction.swift
 //  Modules
 //
-//  Created by Inal Gotov on 2025-09-25.
+//  Created by Inal Gotov on 2025-09-30.
 //
 
 import Core
 import Data
 import SwiftUI
 
-struct NavigateToSegmentAction: AppAction {
-    let navigation: SegmentNavigation
-    
-    init(navigation: SegmentNavigation) {
-        self.navigation = navigation
-    }
-    
-    init(workoutId: Workout.ID, segmentId: Segment.ID) {
-        self.init(
-            navigation: SegmentNavigation(
-                workoutId: workoutId,
-                segmentId: segmentId
-            )
-        )
-    }
+struct NavigateToExerciseAction: AppAction {
+    let exerciseId: Exercise.ID
 }
 
-extension NavigateToSegmentAction {
-    fileprivate struct Handler: ViewModifier {
+fileprivate extension NavigateToExerciseAction {
+    struct Handler: ViewModifier {
         @Environment(\.appActions) var appActions
         
         let store: WorkoutStore
-        @Binding var path: NavigationPath
+        @Binding var navigationPath: NavigationPath
         
         func body(content: Content) -> some View {
             content
-                .onReceive(appActions.events(for: NavigateToSegmentAction.self)) { action in
-                    path.append(action.navigation)
+                .onReceive(appActions.events(for: NavigateToExerciseAction.self)) { action in
+                    navigationPath.append(action.exerciseId)
                 }
-                .navigationDestination(for: SegmentNavigation.self) { navigation in
-                    SegmentView(store: store, navigation: navigation)
+                .navigationDestination(for: Exercise.ID.self) { exerciseId in
+                    ExerciseView(store: store, exerciseId: exerciseId)
                 }
         }
     }
 }
 
 extension View {
-    func registerSegmentNavigationHandler(store: WorkoutStore, path: Binding<NavigationPath>) -> some View {
-        modifier(NavigateToSegmentAction.Handler(store: store, path: path))
+    func registerExerciseNavigationHandler(store: WorkoutStore, path: Binding<NavigationPath>) -> some View {
+        modifier(NavigateToExerciseAction.Handler(store: store, navigationPath: path))
     }
 }

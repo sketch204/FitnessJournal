@@ -63,7 +63,7 @@ struct ExerciseLookupView: View {
                 Button {
                     selectExercise(exercise)
                 } label: {
-                    ExerciseRow(exercise)
+                    ExerciseRow(store: store, exerciseId: exercise.id)
                 }
                 .buttonStyle(.plain)
                 .contextMenu {

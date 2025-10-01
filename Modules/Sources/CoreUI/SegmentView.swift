@@ -32,18 +32,25 @@ struct SegmentView: View {
         if let workout, let segment {
             List {
                 Button {
-                    appActions.perform(SelectExerciseAction { exercise in
-                        updateSegment(with: exercise)
-                    })
+                    appActions.perform(NavigateToExerciseAction(exerciseId: segment.exercise.id))
                 } label: {
                     headerView(workout: workout, segment: segment)
+                }
+                .contextMenu {
+                    Button {
+                        appActions.perform(SelectExerciseAction { exercise in
+                            updateSegment(with: exercise)
+                        })
+                    } label: {
+                        Label("Edit", systemImage: "pencil")
+                    }
                 }
                 
                 ForEach(segment.sets) { set in
                     Button {
                         editSet(setId: set.id)
                     } label: {
-                        SetRow(store: store, set: set)
+                        SetRow(set: set)
                     }
                 }
                 .onDelete { indexSet in
