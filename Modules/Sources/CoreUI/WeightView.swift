@@ -28,8 +28,7 @@ struct WeightView: View {
             Button {
                 isShowingTotalWeight.toggle()
             } label: {
-                icon
-                    .foregroundStyle(Color.accentColor)
+                icon.foregroundStyle(Color.accentColor)
                     .imageScale(.large)
             }
         }

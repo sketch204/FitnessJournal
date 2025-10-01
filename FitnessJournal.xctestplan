@@ -23,6 +23,13 @@
         "identifier" : "CoreTests",
         "name" : "CoreTests"
       }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:Modules",
+        "identifier" : "CoreUITests",
+        "name" : "CoreUITests"
+      }
     }
   ],
   "version" : 1

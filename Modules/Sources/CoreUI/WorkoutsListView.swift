@@ -32,7 +32,11 @@ public struct WorkoutsListView: View {
         }
         .background {
             if workouts.isEmpty {
-                ContentUnavailableView("No Workouts Yet", systemImage: "dumbbell.fill", description: Text("Add your first workout by tapping the button below."))
+                ContentUnavailableView(
+                    "No Workouts Yet",
+                    systemImage: "dumbbell.fill",
+                    description: Text("Add your first workout by tapping the button below.")
+                )
             }
         }
         .animation(.default, value: store.workouts.count)

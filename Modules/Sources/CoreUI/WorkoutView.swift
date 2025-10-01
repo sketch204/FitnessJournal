@@ -16,7 +16,6 @@ public struct WorkoutView: View {
     public let workoutId: Workout.ID
     
     @State private var isEditingDate: Bool = false
-    @State private var isAddingExercise: Bool = false
     
     var workout: Workout? {
         store.workouts.first(where: { $0.id == workoutId })
@@ -50,7 +49,9 @@ public struct WorkoutView: View {
                 }
                 
                 Button("Add Segment") {
-                    isAddingExercise = true
+                    appActions.perform(SelectExerciseAction { exercise in
+                        createSegment(with: exercise)
+                    })
                 }
                 .buttonStyle(.borderless)
             }
@@ -62,13 +63,6 @@ public struct WorkoutView: View {
                     WorkoutDateEditView(store: store, workoutId: workoutId)
                 }
                 .presentationDetents([.medium])
-            }
-            .sheet(isPresented: $isAddingExercise) {
-                NavigationStack {
-                    ExerciseLookupView(store: store) { exercise in
-                        createSegment(with: exercise)
-                    }
-                }
             }
         } else {
             ContentUnavailableView("Workout not found!", systemImage: "questionmark.circle.dashed")

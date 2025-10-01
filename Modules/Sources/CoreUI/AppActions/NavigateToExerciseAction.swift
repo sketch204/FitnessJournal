@@ -46,7 +46,7 @@ extension NavigateToSegmentAction {
 }
 
 extension View {
-    func registerSegmentNavigationActionHandler(store: WorkoutStore, path: Binding<NavigationPath>) -> some View {
+    func registerSegmentNavigationHandler(store: WorkoutStore, path: Binding<NavigationPath>) -> some View {
         modifier(NavigateToSegmentAction.Handler(store: store, path: path))
     }
 }
