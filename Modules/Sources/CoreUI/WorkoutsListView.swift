@@ -40,7 +40,7 @@ public struct WorkoutsListView: View {
             }
         }
         .animation(.default, value: store.workouts.count)
-        .overlay(alignment: .bottom, content: {
+        .safeAreaInset(edge: .bottom, content: {
             Button(action: addNewWorkout) {
                 Label("Add Workout", systemImage: "plus")
                     .frame(maxWidth: .infinity)
@@ -68,5 +68,25 @@ public struct WorkoutsListView: View {
 #Preview("No workouts") {
     NavigationStack {
         WorkoutsListView(store: .preview(workouts: []))
+    }
+}
+
+#Preview("Many Workouts") {
+    NavigationStack {
+        WorkoutsListView(
+            store: .preview(
+                workouts: [
+                    .init(),
+                    .init(),
+                    .init(),
+                    .init(),
+                    .init(),
+                    .init(),
+                    .init(),
+                    .init(),
+                    .init(),
+                ]
+            )
+        )
     }
 }
