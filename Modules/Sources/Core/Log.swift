@@ -7,6 +7,7 @@
 
 import os
 
-enum Log {
-    nonisolated static let core = Logger(subsystem: "com.sketch204.FitnessJournal", category: "Core")
+public enum Log {
+    public nonisolated static let core = Logger(subsystem: "com.sketch204.FitnessJournal", category: "Core")
+    public nonisolated static let ui = Logger(subsystem: "com.sketch204.FitnessJournal", category: "UI")
 }

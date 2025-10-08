@@ -21,12 +21,21 @@ struct FitnessJournalApp: App {
     }
     
     @State var store: WorkoutStore?
+    @State var isDebugMenuPresented: Bool = false
     
     var body: some Scene {
         WindowGroup {
             Group {
                 if let store {
                     RootView(workoutStore: store)
+                        .onTapGesture(count: 5) {
+                            isDebugMenuPresented = true
+                        }
+                        .sheet(isPresented: $isDebugMenuPresented) {
+                            if let persistor = persistor as? FileWorkoutStorePersistor {
+                                DebugMenu(store: store, persistor: persistor)
+                            }
+                        }
                 } else {
                     ProgressView()
                 }
