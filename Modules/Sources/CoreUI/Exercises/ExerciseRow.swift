@@ -22,14 +22,15 @@ struct ExerciseRow: View {
     }
     
     var body: some View {
-        if let exercise, let maxWeight {
+        if let exercise {
             HStack {
                 Text(exercise.name)
                     .font(.title2)
                 
-                Spacer()
-                
-                WeightView(weight: maxWeight)
+                if let maxWeight {
+                    Spacer()
+                    WeightView(weight: maxWeight)
+                }
             }
         } else {
             Text("Exercise not found")
