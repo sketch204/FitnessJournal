@@ -326,6 +326,13 @@ extension WorkoutStore {
             .reduce(into: [Date: [Segment.Set]]()) { partialResult, pair in
                 partialResult[pair.date] = pair.sets
             }
+            .filter { !$0.value.isEmpty }
+    }
+    
+    public func latestSet(with exerciseId: Exercise.ID) -> Segment.Set? {
+        let sets = sets(with: exerciseId)
+        guard let maxDate = sets.keys.max() else { return nil }
+        return sets[maxDate]?.last
     }
     
     public func segments(with exerciseId: Exercise.ID) -> [Segment] {

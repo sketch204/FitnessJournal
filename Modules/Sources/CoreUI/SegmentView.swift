@@ -108,13 +108,7 @@ struct SegmentView: View {
     }
     
     private func addNewSet() {
-        let newSet = newSet()
-        store.createSet(
-            newSet,
-            segmentId: navigation.segmentId,
-            workoutId: navigation.workoutId
-        )
-        editSet(setId: newSet.id)
+        appActions.addSet(navigation: navigation)
     }
     
     private func editSet(setId: Segment.Set.ID) {

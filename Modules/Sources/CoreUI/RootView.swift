@@ -28,6 +28,7 @@ public struct RootView: View {
                 .registerSelectExerciseHandler(store: store)
                 .registerEditWorkoutHandler(store: store)
                 .registerEditSetHandler(store: store)
+                .registerAddSetHandler(store: store)
         }
         .environment(\.appActions, appActions)
     }
