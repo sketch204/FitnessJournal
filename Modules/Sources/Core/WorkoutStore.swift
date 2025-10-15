@@ -190,6 +190,15 @@ extension WorkoutStore {
         return segment
     }
     
+    public func moveSegments(at sourceIndices: IndexSet, to targetIndex: Int, for workoutId: Workout.ID) {
+        updateWorkout(with: workoutId) { workout in
+            workout.segments.moveSubranges(
+                RangeSet(sourceIndices, within: workout.segments),
+                to: targetIndex
+            )
+        }
+    }
+    
     @discardableResult
     public func updateSegment(
         segmentId: Segment.ID,

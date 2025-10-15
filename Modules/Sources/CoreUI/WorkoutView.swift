@@ -40,6 +40,9 @@ public struct WorkoutView: View {
                         SegmentRow(segment)
                     }
                 }
+                .onMove(perform: { sourceIndices, targetIndex in
+                    store.moveSegments(at: sourceIndices, to: targetIndex, for: workoutId)
+                })
                 .onDelete { indexSet in
                     indexSet.map{ workout.segments[$0] }
                         .forEach { segment in
