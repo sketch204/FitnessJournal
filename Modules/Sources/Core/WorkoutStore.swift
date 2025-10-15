@@ -30,6 +30,8 @@ public final class WorkoutStore {
     ) {
         self.persistor = persistor
         
+        Log.core.trace("Created store with persistor \(String(describing: persistor))")
+        
         loadWorkouts()
         loadExercises()
     }
@@ -37,6 +39,7 @@ public final class WorkoutStore {
     private func loadWorkouts() {
         Task {
             do {
+                Log.core.trace("Loading workouts into store")
                 workouts = try await persistor.loadWorkouts()
             } catch {
                 Log.core.critical("Failed to load workouts due to error! \(error)")
@@ -47,6 +50,7 @@ public final class WorkoutStore {
     private func saveWorkouts(workouts: [Workout]) {
         Task {
             do {
+                Log.core.trace("Saving workouts")
                 try await persistor.saveWorkouts(workouts)
             } catch {
                 Log.core.critical("Failed to save workouts due to error! \(error)")
@@ -57,6 +61,7 @@ public final class WorkoutStore {
     private func loadExercises() {
         Task {
             do {
+                Log.core.trace("Loading exercises into store")
                 exercises = try await persistor.loadExercises()
             } catch {
                 Log.core.critical("Failed to load exercises due to error! \(error)")
@@ -67,6 +72,7 @@ public final class WorkoutStore {
     private func saveExercises(exercises: [Exercise]) {
         Task {
             do {
+                Log.core.trace("Savings exercises")
                 try await persistor.saveExercises(exercises)
             } catch {
                 Log.core.critical("Failed to save exercises due to error! \(error)")
@@ -299,48 +305,6 @@ extension WorkoutStore {
 // MARK: - Exercises
 
 extension WorkoutStore {
-    public func maxWeight(for exerciseId: Exercise.ID) -> Weight? {
-        workouts
-            .compactMap { workout -> Weight? in
-                let filteredSegments = workout.segments.filter({ $0.exercise.id == exerciseId })
-                guard !filteredSegments.isEmpty else { return nil }
-                return filteredSegments
-                    .flatMap(\.sets)
-                    .map(\.weight)
-                    .max {
-                        $0.totalWeight < $1.totalWeight
-                    }
-            }
-            .max {
-                $0.totalWeight < $1.totalWeight
-            }
-    }
-    
-    public func sets(with exerciseId: Exercise.ID) -> [Date: [Segment.Set]] {
-        workouts
-            .compactMap { workout -> (date: Date, sets: [Segment.Set])? in
-                let filteredSegments = workout.segments.filter({ $0.exercise.id == exerciseId })
-                guard !filteredSegments.isEmpty else { return nil }
-                return (workout.date, filteredSegments.flatMap(\.sets))
-            }
-            .reduce(into: [Date: [Segment.Set]]()) { partialResult, pair in
-                partialResult[pair.date] = pair.sets
-            }
-            .filter { !$0.value.isEmpty }
-    }
-    
-    public func latestSet(with exerciseId: Exercise.ID) -> Segment.Set? {
-        let sets = sets(with: exerciseId)
-        guard let maxDate = sets.keys.max() else { return nil }
-        return sets[maxDate]?.last
-    }
-    
-    public func segments(with exerciseId: Exercise.ID) -> [Segment] {
-        workouts.flatMap { workout in
-            workout.segments.filter { $0.exercise.id == exerciseId }
-        }
-    }
-    
     public func exercise(with exerciseId: Exercise.ID) -> Exercise? {
         exercises.first(where: { $0.id == exerciseId })
     }
@@ -415,6 +379,66 @@ extension WorkoutStore {
                 return segment
             }
             return workout
+        }
+    }
+}
+
+// MARK: Exercises Accessors
+
+extension WorkoutStore {
+    public func maxWeight(for exerciseId: Exercise.ID) -> Weight? {
+        workouts
+            .compactMap { workout -> Weight? in
+                let filteredSegments = workout.segments.filter({ $0.exercise.id == exerciseId })
+                guard !filteredSegments.isEmpty else { return nil }
+                return filteredSegments
+                    .flatMap(\.sets)
+                    .map(\.weight)
+                    .max {
+                        $0.totalWeight < $1.totalWeight
+                    }
+            }
+            .max {
+                $0.totalWeight < $1.totalWeight
+            }
+    }
+    
+    public func datedSegments(with exerciseId: Exercise.ID) -> [Date: [Segment]] {
+        workouts
+            .compactMap { workout -> (date: Date, segments: [Segment])? in
+                let filteredSegments = workout.segments.filter({ $0.exercise.id == exerciseId })
+                guard !filteredSegments.isEmpty else { return nil }
+                return (workout.date, filteredSegments)
+            }
+            .reduce(into: [Date: [Segment]]()) { partialResult, pair in
+                partialResult[pair.date] = pair.segments
+            }
+            .filter { !$0.value.isEmpty }
+    }
+    
+    public func latestSegment(with exerciseId: Exercise.ID) -> Segment? {
+        let segments = datedSegments(with: exerciseId)
+        guard let maxDate = segments.keys.max() else { return nil }
+        return segments[maxDate]?.last
+    }
+    
+    public func sets(with exerciseId: Exercise.ID) -> [Date: [Segment.Set]] {
+        datedSegments(with: exerciseId)
+            .mapValues { segments in
+                segments.flatMap(\.sets)
+            }
+            .filter { !$0.value.isEmpty }
+    }
+    
+    public func latestSet(with exerciseId: Exercise.ID) -> Segment.Set? {
+        let sets = sets(with: exerciseId)
+        guard let maxDate = sets.keys.max() else { return nil }
+        return sets[maxDate]?.last
+    }
+    
+    public func segments(with exerciseId: Exercise.ID) -> [Segment] {
+        workouts.flatMap { workout in
+            workout.segments.filter { $0.exercise.id == exerciseId }
         }
     }
 }

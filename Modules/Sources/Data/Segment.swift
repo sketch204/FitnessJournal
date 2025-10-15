@@ -37,12 +37,33 @@ extension Segment {
     }
     
     public var commonWeight: Weight? {
-        Dictionary(
+        let groupedWeights = Dictionary(
             grouping: sets.map(\.weight),
             by: \.hashValue
         )
         .values
-        .max(by: { $0.count < $1.count })?.first
+        
+        let allWeightsUnique = Swift.Set(groupedWeights).count == groupedWeights.count
+        
+        guard !allWeightsUnique else { return nil }
+        
+        return groupedWeights.max(by: { $0.count < $1.count })?.first
+    }
+    
+    public var displayRepetitions: Int? {
+        commonRepetitions ?? sets.max(by: { $0.repetitions < $1.repetitions })?.repetitions
+    }
+    
+    public var commonRepetitions: Int? {
+        let groupedRepetitions = Dictionary(grouping: sets.map(\.repetitions), by: \.self).values
+        let allRepsUnique = Swift.Set(groupedRepetitions).count == groupedRepetitions.count
+        guard !allRepsUnique else { return nil }
+        return groupedRepetitions.max(by: { $0.count < $1.count })?.first
+    }
+    
+    public var compositionString: String? {
+        guard let displayRepetitions else { return nil }
+        return "\(sets.count)x\(displayRepetitions)"
     }
 }
 

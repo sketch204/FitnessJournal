@@ -26,6 +26,8 @@ fileprivate extension SelectExerciseAction {
     struct Handler: ViewModifier {
         @Environment(\.appActions) private var appActions
         
+        @State private var nestedAppActions = AppActions()
+        @State private var path = NavigationPath()
         @State private var action: SelectExerciseAction?
         
         let store: WorkoutStore
@@ -38,9 +40,11 @@ fileprivate extension SelectExerciseAction {
                     }
                 }
                 .sheet(item: $action) { action in
-                    NavigationStack {
+                    NavigationStack(path: $path) {
                         ExerciseLookupView(store: store, onSelect: action.onSelect)
+                            .registerExerciseNavigationHandler(store: store, path: $path)
                     }
+                    .environment(\.appActions, nestedAppActions)
                 }
         }
     }
@@ -49,5 +53,11 @@ fileprivate extension SelectExerciseAction {
 extension View {
     func registerSelectExerciseHandler(store: WorkoutStore) -> some View {
         modifier(SelectExerciseAction.Handler(store: store))
+    }
+}
+
+extension AppActions {
+    func selectExercise(_ onSelect: @escaping (Exercise) -> Void) {
+        perform(SelectExerciseAction(onSelect: onSelect))
     }
 }

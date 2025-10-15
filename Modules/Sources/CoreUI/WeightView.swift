@@ -89,4 +89,20 @@ struct WeightView: View {
             units: .kilograms
         )
     )
+    
+    WeightView(
+        weight: Weight(
+            distribution: .total(145),
+            units: .kilograms
+        )
+    )
+    .foregroundStyle(.secondary)
+    
+    WeightView(
+        weight: Weight(
+            distribution: .total(145),
+            units: .kilograms
+        )
+    )
+    .foregroundStyle(.tertiary)
 }

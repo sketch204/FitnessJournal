@@ -11,6 +11,7 @@ import SwiftUI
 protocol AppAction {}
 
 struct AppActions {
+    private let id = UUID()
     private let subject = PassthroughSubject<AppAction, Never>()
     
     init() {}
@@ -23,6 +24,12 @@ struct AppActions {
     
     func perform(_ action: some AppAction) {
         subject.send(action)
+    }
+}
+
+extension AppActions: Equatable {
+    static func == (lhs: AppActions, rhs: AppActions) -> Bool {
+        lhs.id == rhs.id
     }
 }
 

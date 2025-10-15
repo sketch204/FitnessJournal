@@ -37,3 +37,9 @@ extension View {
         modifier(NavigateToExerciseAction.Handler(store: store, navigationPath: path))
     }
 }
+
+extension AppActions {
+    func navigate(to exerciseId: Exercise.ID) {
+        perform(NavigateToExerciseAction(exerciseId: exerciseId))
+    }
+}
