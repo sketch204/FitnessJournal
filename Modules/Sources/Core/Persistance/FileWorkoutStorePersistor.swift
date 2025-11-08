@@ -19,6 +19,10 @@ public actor FileWorkoutStorePersistor: WorkoutStorePersistor {
         URL.documentsDirectory.appendingPathComponent("data.json")
     }
 
+    public static var sampleFileUrl: URL {
+        Bundle.main.url(forResource: "SampleData", withExtension: "json")!
+    }
+
     private let decoder = JSONDecoder()
     private let encoder = {
         let output = JSONEncoder()
@@ -28,8 +32,12 @@ public actor FileWorkoutStorePersistor: WorkoutStorePersistor {
         return output
     }()
 
-    public let fileUrl: URL
-    
+    public private(set) var fileUrl: URL {
+        didSet {
+            Log.core.trace("Set FileWorkoutStorePersistor fileUrl: \(self.fileUrl, privacy: .public)")
+        }
+    }
+
     private var data: DataWrapper?
     
     public init(fileUrl: URL = defaultFileUrl) {
@@ -57,7 +65,7 @@ public actor FileWorkoutStorePersistor: WorkoutStorePersistor {
         }
     }
     
-    private func saveData(_ data: DataWrapper) {
+    private func saveData(_ data: DataWrapper) async {
         do {
             let fileData = try encoder.encode(data)
             try fileData.write(to: fileUrl, options: .atomic)
@@ -70,26 +78,31 @@ public actor FileWorkoutStorePersistor: WorkoutStorePersistor {
         data?.workouts ?? []
     }
     
-    public func saveWorkouts(_ workouts: [Workout]) {
+    public func saveWorkouts(_ workouts: [Workout]) async {
         guard data != nil else {
             Log.core.critical("Could not save workouts because no data was loaded!")
             return
         }
         self.data?.workouts = workouts
-        saveData(data!)
+        await saveData(data!)
     }
     
     public func loadExercises() -> [Exercise] {
         data?.exercises ?? []
     }
     
-    public func saveExercises(_ exercises: [Exercise]) {
+    public func saveExercises(_ exercises: [Exercise]) async {
         guard data != nil else {
             Log.core.critical("Could not save exercises because no data was loaded!")
             return
         }
         data?.exercises = exercises
-        saveData(data!)
+        await saveData(data!)
+    }
+
+    public func setFileUrl(_ url: URL) async {
+        fileUrl = url
+        await loadData()
     }
 }
 

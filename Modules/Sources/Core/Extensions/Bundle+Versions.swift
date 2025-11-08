@@ -16,14 +16,3 @@ public extension Bundle {
         infoDictionary?["CFBundleVersion"] as? String
     }
 }
-
-#if DEBUG
-
-import Playgrounds
-
-#Playground {
-    let versionString = Bundle.main.versionString
-    let buildNumberString = Bundle.main.buildNumberString
-}
-
-#endif

@@ -24,7 +24,10 @@ public final class WorkoutStore {
     
     public private(set) var exercises: [Exercise] = []
     public private(set) var workouts: [Workout] = []
-    
+
+    public private(set) var isUsingSampleData: Bool = false
+    public var isPersistentWritesDisabled: Bool = false
+
     public init(
         persistor: WorkoutStorePersistor,
     ) {
@@ -32,10 +35,14 @@ public final class WorkoutStore {
         
         Log.core.trace("Created store with persistor \(String(describing: persistor))")
         
+        reloadData()
+    }
+
+    public func reloadData() {
         loadWorkouts()
         loadExercises()
     }
-    
+
     private func loadWorkouts() {
         Task {
             do {
@@ -48,6 +55,7 @@ public final class WorkoutStore {
     }
     
     private func saveWorkouts(workouts: [Workout]) {
+        guard !isPersistentWritesDisabled else { return }
         Task {
             do {
                 Log.core.trace("Saving workouts")
@@ -70,6 +78,7 @@ public final class WorkoutStore {
     }
     
     private func saveExercises(exercises: [Exercise]) {
+        guard !isPersistentWritesDisabled else { return }
         Task {
             do {
                 Log.core.trace("Savings exercises")

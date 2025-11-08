@@ -18,7 +18,9 @@ public struct DebugMenu: View {
     
     let store: WorkoutStore
     let persistor: FileWorkoutStorePersistor
-    
+
+    @State private var isUsingSampleData: Bool = false
+
     @State private var isExportingData: Bool = false
     @State private var exportedDocumentUrl: URL?
 
@@ -39,6 +41,19 @@ public struct DebugMenu: View {
     public var body: some View {
         NavigationStack {
             Form {
+                Section("Data Source") {
+                    Toggle("Use Sample Data", isOn: $isUsingSampleData)
+                    Toggle(
+                        "Disable Persistent Writes",
+                        isOn: Binding {
+                            store.isPersistentWritesDisabled
+                        } set: {
+                            store.isPersistentWritesDisabled = $0
+                        }
+                    )
+                    .disabled(isUsingSampleData)
+                }
+
                 Section {
                     Button("Export All Data") {
                         exportData()
@@ -51,6 +66,10 @@ public struct DebugMenu: View {
             }
             .navigationTitle("Debug")
         }
+        .task {
+            isUsingSampleData = await persistor.fileUrl == FileWorkoutStorePersistor.sampleFileUrl
+        }
+        .onChange(of: isUsingSampleData, updatePersistorDataSource)
         .fileMover(isPresented: $isExportingData, file: exportedDocumentUrl) { result in
             switch result {
             case .success(let url):
@@ -73,6 +92,18 @@ public struct DebugMenu: View {
             } catch {
                 Log.ui.critical("Failed to export fitness data due to error! \(error)")
             }
+        }
+    }
+
+    func updatePersistorDataSource() {
+        Task { @MainActor in
+            let newUrl = isUsingSampleData ? FileWorkoutStorePersistor.sampleFileUrl : FileWorkoutStorePersistor.defaultFileUrl
+
+            guard await persistor.fileUrl != newUrl else { return }
+
+            await persistor.setFileUrl(newUrl)
+            store.isPersistentWritesDisabled = isUsingSampleData
+            store.reloadData()
         }
     }
 }

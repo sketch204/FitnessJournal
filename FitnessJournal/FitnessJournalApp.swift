@@ -11,37 +11,40 @@ import SwiftUI
 
 @main
 struct FitnessJournalApp: App {
-    @AppStorage("__dataStore") private var dataStore: PersistenceType = .file
-    var persistor: WorkoutStorePersistor {
-        switch dataStore {
-        case .file: .file
-        case .memory: .memory
-        case .preview: .preview()
-        }
-    }
-    
-    @State var store: WorkoutStore?
+    let persistor: FileWorkoutStorePersistor
+
+    @State var store: WorkoutStore
     @State var isDebugMenuPresented: Bool = false
-    
+
+    init() {
+        let persistor = FileWorkoutStorePersistor.file
+
+        self.persistor = persistor
+        _store = State(initialValue: WorkoutStore(persistor: persistor))
+    }
+
     var body: some Scene {
         WindowGroup {
             Group {
-                if let store {
-                    RootView(workoutStore: store)
-                        .onTapGesture(count: 5) {
-                            isDebugMenuPresented = true
-                        }
-                        .sheet(isPresented: $isDebugMenuPresented) {
-                            if let persistor = persistor as? FileWorkoutStorePersistor {
-                                DebugMenu(store: store, persistor: persistor)
-                            }
-                        }
-                } else {
-                    ProgressView()
-                }
+                RootView(workoutStore: store)
+                    .onTapGesture(count: 5) {
+                        isDebugMenuPresented = true
+                    }
+                    .sheet(isPresented: $isDebugMenuPresented) {
+                        DebugMenu(store: store, persistor: persistor)
+                    }
             }
-            .onAppear {
-                store = WorkoutStore(persistor: persistor)
+            .overlay(alignment: .top) {
+                if store.isPersistentWritesDisabled {
+                    Text("Read-Only Mode")
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 4)
+                        .padding(.vertical, 2)
+                        .background {
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(Color.red.gradient)
+                        }
+                }
             }
         }
     }
