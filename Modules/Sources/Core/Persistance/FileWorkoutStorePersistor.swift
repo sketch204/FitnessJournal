@@ -10,6 +10,7 @@ import Foundation
 
 public actor FileWorkoutStorePersistor: WorkoutStorePersistor {
     private struct DataWrapper: Codable {
+        var version: String?
         var workouts: [Workout] = []
         var exercises: [Exercise] = []
     }
@@ -17,7 +18,16 @@ public actor FileWorkoutStorePersistor: WorkoutStorePersistor {
     public static var defaultFileUrl: URL {
         URL.documentsDirectory.appendingPathComponent("data.json")
     }
-    
+
+    private let decoder = JSONDecoder()
+    private let encoder = {
+        let output = JSONEncoder()
+        #if DEBUG
+        output.outputFormatting = [.sortedKeys, .prettyPrinted]
+        #endif
+        return output
+    }()
+
     public let fileUrl: URL
     
     private var data: DataWrapper?
@@ -31,52 +41,55 @@ public actor FileWorkoutStorePersistor: WorkoutStorePersistor {
         }
     }
     
-    private func loadData() {
+    private func loadData() async {
         guard FileManager.default.fileExists(atPath: fileUrl.path(percentEncoded: false)) else {
-            self.data = DataWrapper()
+            self.data = await DataWrapper(version: Bundle.main.buildNumberString)
             return
         }
         do {
             let fileData = try Data(contentsOf: fileUrl)
-            self.data = try JSONDecoder().decode(DataWrapper.self, from: fileData)
+            self.data = try decoder.decode(DataWrapper.self, from: fileData)
+            if self.data?.version == nil {
+                self.data?.version = await Bundle.main.buildNumberString
+            }
         } catch {
             Log.core.critical("Failed to load file data at \(self.fileUrl) due to error! \(error)")
         }
     }
     
-    private func saveData(_ data: DataWrapper) throws {
+    private func saveData(_ data: DataWrapper) {
         do {
-            let fileData = try JSONEncoder().encode(data)
+            let fileData = try encoder.encode(data)
             try fileData.write(to: fileUrl, options: .atomic)
         } catch {
             Log.core.critical("Failed to save file data at \(self.fileUrl) due to error! \(error)")
         }
     }
     
-    public func loadWorkouts() async throws -> [Workout] {
+    public func loadWorkouts() -> [Workout] {
         data?.workouts ?? []
     }
     
-    public func saveWorkouts(_ workouts: [Workout]) async throws {
-        guard let data else {
+    public func saveWorkouts(_ workouts: [Workout]) {
+        guard data != nil else {
             Log.core.critical("Could not save workouts because no data was loaded!")
             return
         }
-        self.data = DataWrapper(workouts: workouts, exercises: data.exercises)
-        try saveData(self.data!)
+        self.data?.workouts = workouts
+        saveData(data!)
     }
     
-    public func loadExercises() async throws -> [Exercise] {
+    public func loadExercises() -> [Exercise] {
         data?.exercises ?? []
     }
     
-    public func saveExercises(_ exercises: [Exercise]) async throws {
-        guard let data else {
+    public func saveExercises(_ exercises: [Exercise]) {
+        guard data != nil else {
             Log.core.critical("Could not save exercises because no data was loaded!")
             return
         }
-        self.data = DataWrapper(workouts: data.workouts, exercises: exercises)
-        try saveData(self.data!)
+        data?.exercises = exercises
+        saveData(data!)
     }
 }
 

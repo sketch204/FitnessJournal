@@ -21,7 +21,16 @@ public struct DebugMenu: View {
     
     @State private var isExportingData: Bool = false
     @State private var exportedDocumentUrl: URL?
-    
+
+    var versionString: String {
+        [
+            Bundle.main.versionString.map { "Version: \($0)" },
+            Bundle.main.buildNumberString.map { "Build: \($0)" }
+        ]
+        .compactMap({ $0 })
+        .joined(separator: " - ")
+    }
+
     public init(store: WorkoutStore, persistor: FileWorkoutStorePersistor) {
         self.store = store
         self.persistor = persistor
@@ -30,8 +39,14 @@ public struct DebugMenu: View {
     public var body: some View {
         NavigationStack {
             Form {
-                Button("Export All Data") {
-                    exportData()
+                Section {
+                    Button("Export All Data") {
+                        exportData()
+                    }
+                } footer: {
+                    if !versionString.isEmpty {
+                        Text(versionString)
+                    }
                 }
             }
             .navigationTitle("Debug")
