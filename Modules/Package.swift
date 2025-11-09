@@ -10,13 +10,15 @@ let package = Package(
         // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
             name: "Modules",
-            targets: ["Core", "CoreUI", "Data"]),
+            targets: ["Core", "CoreUI", "Persistance", "Data"]),
     ],
     targets: [
-        target(name: "Core", dependencies: ["Data"]),
-        target(name: "CoreUI", dependencies: ["Core", "Data"]),
+        target(name: "CoreUI", dependencies: ["Core", "Data", "Utils"]),
+        target(name: "Core", dependencies: ["Data", "Persistance", "Utils"]),
+        target(name: "Persistance", dependencies: ["Data", "Utils"]),
         target(name: "Data"),
-        
+        target(name: "Utils"),
+
         
         testTarget(
             name: "CoreTests",

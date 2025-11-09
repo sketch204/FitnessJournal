@@ -7,6 +7,7 @@
 
 import Core
 import CoreUI
+import Persistance
 import SwiftUI
 
 @main

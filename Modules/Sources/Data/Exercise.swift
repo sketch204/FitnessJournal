@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct Exercise: Hashable, Codable, Sendable, Identifiable {
+public struct Exercise: Hashable, Sendable, Identifiable {
     public let id: Identifier<Self, UUID>
     public var name: String
     

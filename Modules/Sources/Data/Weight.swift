@@ -5,8 +5,8 @@
 //  Created by Inal Gotov on 2025-08-31.
 //
 
-public struct Weight: Hashable, Codable, Sendable {
-    public enum Distribution: Hashable, Codable, Sendable {
+public struct Weight: Hashable, Sendable {
+    public enum Distribution: Hashable, Sendable {
         /// Defines the total weight
         case total(Double)
         /// Defines the weight of a single dumbbell used in the exercise. Will be doubled.
@@ -15,7 +15,7 @@ public struct Weight: Hashable, Codable, Sendable {
         case barbell(plates: Double, bar: Double)
     }
     
-    public enum Units: Hashable, Codable, Sendable {
+    public enum Units: String, Hashable, Sendable {
         case kilograms
         case pounds
     }

@@ -7,21 +7,20 @@
 
 import Data
 import Foundation
+import Utils
 
-public actor FileWorkoutStorePersistor: WorkoutStorePersistor {
-    private struct DataWrapper: Codable {
-        var version: String?
+public actor FileWorkoutStorePersistor {
+    struct DataWrapper: Codable {
+        static let currentSchemaVersionCodingUserInfoKey = CodingUserInfoKey(rawValue: "currentSchemaVersion")!
+
+        var version: Int?
         var workouts: [Workout] = []
         var exercises: [Exercise] = []
     }
     
-    public static var defaultFileUrl: URL {
-        URL.documentsDirectory.appendingPathComponent("data.json")
-    }
-
-    public static var sampleFileUrl: URL {
-        Bundle.main.url(forResource: "SampleData", withExtension: "json")!
-    }
+    public static let defaultFileUrl = URL.documentsDirectory.appendingPathComponent("data.json")
+    public static let sampleFileUrl = Bundle.main.url(forResource: "SampleData", withExtension: "json")!
+    public static let currentSchemaVersion = Bundle.main.buildNumber
 
     private let decoder = JSONDecoder()
     private let encoder = {
@@ -51,14 +50,14 @@ public actor FileWorkoutStorePersistor: WorkoutStorePersistor {
     
     private func loadData() async {
         guard FileManager.default.fileExists(atPath: fileUrl.path(percentEncoded: false)) else {
-            self.data = await DataWrapper(version: Bundle.main.buildNumberString)
+            self.data = DataWrapper(version: Self.currentSchemaVersion)
             return
         }
         do {
             let fileData = try Data(contentsOf: fileUrl)
             self.data = try decoder.decode(DataWrapper.self, from: fileData)
             if self.data?.version == nil {
-                self.data?.version = await Bundle.main.buildNumberString
+                self.data?.version = Self.currentSchemaVersion
             }
         } catch {
             Log.core.critical("Failed to load file data at \(self.fileUrl) due to error! \(error)")
@@ -103,15 +102,5 @@ public actor FileWorkoutStorePersistor: WorkoutStorePersistor {
     public func setFileUrl(_ url: URL) async {
         fileUrl = url
         await loadData()
-    }
-}
-
-extension WorkoutStorePersistor where Self == FileWorkoutStorePersistor {
-    public static var file: Self {
-        .file()
-    }
-    
-    public static func file(_ fileUrl: URL = FileWorkoutStorePersistor.defaultFileUrl) -> Self {
-        Self(fileUrl: fileUrl)
     }
 }

@@ -7,8 +7,8 @@
 
 import Foundation
 
-public struct Segment: Hashable, Codable, Sendable, Identifiable {
-    public struct Set: Hashable, Codable, Sendable, Identifiable {
+public struct Segment: Hashable, Sendable, Identifiable {
+    public struct Set: Hashable, Sendable, Identifiable {
         public let id: Identifier<Self, UUID>
         public var weight: Weight
         public var repetitions: Int

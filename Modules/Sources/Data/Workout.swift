@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct Workout: Hashable, Codable, Sendable, Identifiable {
+public struct Workout: Hashable, Sendable, Identifiable {
     public let id: Identifier<Self, UUID>
     public var date: Date
     public var segments: [Segment]

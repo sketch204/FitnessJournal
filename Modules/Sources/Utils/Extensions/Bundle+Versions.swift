@@ -15,4 +15,8 @@ public extension Bundle {
     var buildNumberString: String? {
         infoDictionary?["CFBundleVersion"] as? String
     }
+
+    var buildNumber: Int? {
+        buildNumberString.flatMap(Int.init)
+    }
 }

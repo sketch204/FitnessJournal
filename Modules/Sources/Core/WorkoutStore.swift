@@ -7,6 +7,8 @@
 
 import Data
 import Foundation
+import Persistance
+import Utils
 
 public protocol WorkoutStorePersistor: Sendable {
     func loadWorkouts() async throws -> [Workout]
@@ -15,6 +17,17 @@ public protocol WorkoutStorePersistor: Sendable {
     func loadExercises() async throws -> [Exercise]
     func saveExercises(_ exercises: [Exercise]) async throws
 }
+
+extension WorkoutStorePersistor where Self == FileWorkoutStorePersistor {
+    public static var file: Self {
+        .file()
+    }
+
+    public static func file(_ fileUrl: URL = FileWorkoutStorePersistor.defaultFileUrl) -> Self {
+        Self(fileUrl: fileUrl)
+    }
+}
+
 
 // MARK: WorkoutStore
 
