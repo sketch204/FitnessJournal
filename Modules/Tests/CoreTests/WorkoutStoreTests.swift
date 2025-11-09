@@ -295,6 +295,8 @@ extension WorkoutStoreTests {
         let sampleSegment: Segment
         let originalWorkouts: [Workout]
 
+        let newSet = Segment.Set(weight: Weight(distribution: .total(50), units: .pounds), repetitions: 10)
+
         init() async throws {
             persistor = SpyWorkoutStorePersistor()
             store = WorkoutStore(persistor: persistor)
@@ -309,8 +311,6 @@ extension WorkoutStoreTests {
         // MARK: Create
         
         @Test func `It should create sets`() {
-            let newSet = Segment.Set.sampleBarbell
-
             let createdSet = store.createSet(newSet, segmentId: sampleSegment.id, workoutId: sampleWorkout.id)
 
             #expect(createdSet == newSet)
@@ -318,8 +318,6 @@ extension WorkoutStoreTests {
         }
         
         @Test func `It should save when creating sets`() async throws {
-            let newSet = Segment.Set.sampleBarbell
-
             store.createSet(newSet, segmentId: sampleSegment.id, workoutId: sampleWorkout.id)
 
             try await persistor.waitUntilEvent(.saveWorkouts)
@@ -352,8 +350,6 @@ extension WorkoutStoreTests {
         // MARK: Update
         
         @Test func `It should not update non-existent sets`() {
-            let newSet = Segment.Set.sampleBarbell
-
             let createdSet = store.updateSet(newSet, segmentId: sampleSegment.id, workoutId: sampleWorkout.id)
 
             #expect(createdSet == nil)
@@ -401,9 +397,7 @@ extension WorkoutStoreTests {
         }
         
         @Test func `It should not delete non-existent sets`() {
-            let set = Segment.Set.sampleTotal
-
-            store.deleteSet(set, segmentId: sampleSegment.id, workoutId: sampleWorkout.id)
+            store.deleteSet(newSet, segmentId: sampleSegment.id, workoutId: sampleWorkout.id)
 
             #expect(store.workouts == originalWorkouts)
         }

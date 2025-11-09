@@ -22,19 +22,3 @@ public struct Workout: Hashable, Sendable, Identifiable {
         self.segments = segments
     }
 }
-
-#if DEBUG
-public extension Workout {
-    static var sample: Workout {
-        Workout(
-            id: .new,
-            date: Date(timeIntervalSince1970: 1756691175),
-            segments: [
-                .sampleBenchPress,
-                .sampleChestFlys,
-                .sampleBicepCurl,
-            ]
-        )
-    }
-}
-#endif

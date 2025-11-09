@@ -20,6 +20,13 @@
     {
       "target" : {
         "containerPath" : "container:Modules",
+        "identifier" : "PersistanceTests",
+        "name" : "PersistanceTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:Modules",
         "identifier" : "CoreTests",
         "name" : "CoreTests"
       }
@@ -27,8 +34,8 @@
     {
       "target" : {
         "containerPath" : "container:Modules",
-        "identifier" : "PersistanceTests",
-        "name" : "PersistanceTests"
+        "identifier" : "DataTests",
+        "name" : "DataTests"
       }
     }
   ],

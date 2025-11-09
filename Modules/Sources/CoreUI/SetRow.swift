@@ -25,12 +25,14 @@ struct SetRow: View {
 }
 
 #Preview {
-    let workout = Workout.sample
-    let segment = workout.segments.first!
-    
-    List(segment.sets) { set in
-        SetRow(
-            set: set
-        )
+    PreviewingStore { store in
+        let workout = store.workouts.first!
+        let segment = workout.segments.first!
+
+        List(segment.sets) { set in
+            SetRow(
+                set: set
+            )
+        }
     }
 }

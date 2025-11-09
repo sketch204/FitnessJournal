@@ -16,29 +16,3 @@ public struct Exercise: Hashable, Sendable, Identifiable {
         self.name = name
     }
 }
-
-#if DEBUG
-public extension Exercise {
-    static var sample: Exercise { .sampleBenchPress }
-    
-    static var sampleBicepCurl: Exercise {
-        .init(name: "Bicep Curl")
-    }
-    
-    static var sampleBenchPress: Exercise {
-        .init(name: "Bench Press")
-    }
-    
-    static var sampleDeadlifts: Exercise {
-        .init(name: "Deadlifts")
-    }
-    
-    static var sampleLegExtensions: Exercise {
-        .init(name: "Leg Extensions")
-    }
-    
-    static var sampleChestFlys: Exercise {
-        .init(name: "Chest Flys")
-    }
-}
-#endif

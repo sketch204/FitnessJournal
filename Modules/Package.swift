@@ -41,6 +41,10 @@ let package = Package(
 //            name: "CoreUITests",
 //            dependencies: ["Core", "CoreUI", "Data"]
 //        )
+        testTarget(
+            name: "DataTests",
+            dependencies: ["Data"]
+        )
     ]
 )
 
