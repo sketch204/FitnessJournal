@@ -54,7 +54,7 @@ extension WorkoutStoreTests {
         
         // MARK: Create
         
-        @Test func `it should create workouts`() async throws{
+        @Test func `it should create workouts`() {
             let newWorkout = Workout()
             let createdWorkout = store.createWorkout(newWorkout)
             #expect(createdWorkout == newWorkout)
@@ -71,29 +71,32 @@ extension WorkoutStoreTests {
 
         // MARK: Read
 
-        @Test func `It should return workouts`() async throws {
+        @Test func `It should return workouts`() {
             #expect(store.workout(with: sampleWorkout.id) == sampleWorkout)
         }
 
-        @Test func `It should not return non-existent workouts`() async throws {
+        @Test func `It should not return non-existent workouts`() {
             #expect(store.workout(with: .new) == nil)
         }
 
         // MARK: Update
         
-        @Test func `It should not update missing workouts`() async throws{
+        @Test func `It should not update missing workouts`() {
             let newWorkout = Workout()
             let createdWorkout = store.updateWorkout(newWorkout)
             #expect(createdWorkout == nil)
             #expect(store.workouts == originalWorkouts)
         }
         
-        @Test func `It should update existing workouts`() async throws{
-            var sample = sampleWorkout
-            sample.date = Date()
-            sample.segments.removeLast()
+        @Test func `It should update existing workouts`() {
+            var sample: Workout!
 
-            let updatedWorkout = store.updateWorkout(sample)
+            let updatedWorkout = store.updateWorkout(with: sampleWorkout.id) { workout in
+                workout.date = Date()
+                workout.segments.removeLast()
+
+                sample = workout
+            }
 
             #expect(updatedWorkout == sample)
             let expectedWorkouts = originalWorkouts.map {
@@ -101,7 +104,7 @@ extension WorkoutStoreTests {
             }
             #expect(store.workouts == expectedWorkouts)
         }
-        
+
         @Test func `It should save when updating workouts`() async throws {
             var sample = sampleWorkout
             sample.segments.removeLast()
@@ -114,13 +117,13 @@ extension WorkoutStoreTests {
         
         // MARK: Delete
         
-        @Test func `It should delete workouts`() async throws{
+        @Test func `It should delete workouts`() {
             store.deleteWorkout(sampleWorkout)
 
             #expect(store.workouts == originalWorkouts.filter({ $0.id != sampleWorkout.id }))
         }
         
-        @Test func `It should not delete non-existent workouts`() async throws{
+        @Test func `It should not delete non-existent workouts`() {
             let newWorkout = Workout()
             store.deleteWorkout(newWorkout)
             #expect(store.workouts == originalWorkouts)
@@ -157,8 +160,8 @@ extension WorkoutStoreTests {
 
         // MARK: Create
         
-        @Test func `It should create segments`() async throws{
-            let newSegment = Segment.sampleLegExtensions
+        @Test func `It should create segments`() {
+            let newSegment = Segment(exercise: .new)
 
             let createdSegment = store.createSegment(newSegment, for: sampleWorkout.id)
 
@@ -166,8 +169,8 @@ extension WorkoutStoreTests {
             #expect(store.workout(with: sampleWorkout.id)?.segments == sampleWorkout.segments + [newSegment])
         }
         
-        @Test func `It should save when creating segments`() async throws{
-            let newSegment = Segment.sampleLegExtensions
+        @Test func `It should save when creating segments`() async throws {
+            let newSegment = Segment(exercise: .new)
 
             store.createSegment(newSegment, for: sampleWorkout.id)
 
@@ -177,19 +180,19 @@ extension WorkoutStoreTests {
         
         // MARK: Read
         
-        @Test func `It should return segments`() async throws{
+        @Test func `It should return segments`() {
             let segments = store.segments(for: sampleWorkout.id)
             #expect(segments?.isEmpty == false)
         }
         
-        @Test func `It should not return segments for non-existent workouts`() async throws{
+        @Test func `It should not return segments for non-existent workouts`() {
             let segments = store.segments(for: .new)
             #expect(segments == nil)
         }
         
         // MARK: Update
         
-        @Test func `It should not update non-existent segments`() async throws{
+        @Test func `It should not update non-existent segments`() {
             let newSegment = Segment(exercise: .new)
 
             let createdSegment = store.updateSegment(newSegment, for: sampleWorkout.id)
@@ -198,18 +201,26 @@ extension WorkoutStoreTests {
             #expect(store.workouts == originalWorkouts)
         }
         
-        @Test func `It should update existing segments`() async throws{
-            var segment = sampleWorkout.segments.last!
-            segment.exercise = .new
-            segment.sets.removeLast()
+        @Test func `It should update existing segments`() {
+            var sample: Segment!
 
-            let updatedSegment = store.updateSegment(segment, for: sampleWorkout.id)
+            let updatedSegment = store.updateSegment(
+                segmentId: sampleWorkout.segments.last!.id,
+                workoutId: sampleWorkout.id,
+                update: { segment in
+                    segment.exercise = .new
+                    segment.sets.removeLast()
 
-            #expect(updatedSegment == segment)
-            #expect(store.workout(with: sampleWorkout.id)?.segments == sampleWorkout.segments.dropLast() + [segment])
+                    sample = segment
+                }
+            )
+
+            #expect(updatedSegment == sample)
+            let expectedSegments = sampleWorkout.segments.map { $0.id == sample.id ? sample : $0 }
+            #expect(store.segments(for: sampleWorkout.id) == expectedSegments)
         }
         
-        @Test func `It should save when updating segments`() async throws{
+        @Test func `It should save when updating segments`() async throws {
             var segment = sampleWorkout.segments.last!
             segment.exercise = .new
             segment.sets.removeLast()
@@ -219,10 +230,34 @@ extension WorkoutStoreTests {
             try await persistor.waitUntilEvent(.saveWorkouts)
             #expect(persistor.events.contains(.saveWorkouts))
         }
-        
+
+        // MARK: Move
+
+        @Test func `It should move segments in a workout`() {
+            store.moveSegments(
+                at: IndexSet(integer: sampleWorkout.segments.startIndex),
+                to: sampleWorkout.segments.endIndex,
+                for: sampleWorkout.id
+            )
+
+            let expectedSegments = sampleWorkout.segments.dropFirst() + [sampleWorkout.segments.first!]
+            #expect(store.segments(for: sampleWorkout.id) == Array(expectedSegments))
+        }
+
+        @Test func `It should call save after moving segments`() async throws {
+            store.moveSegments(
+                at: IndexSet(integer: sampleWorkout.segments.startIndex),
+                to: sampleWorkout.segments.endIndex - 1,
+                for: sampleWorkout.id
+            )
+
+            try await persistor.waitUntilEvent(.saveWorkouts)
+            #expect(persistor.events.contains(.saveWorkouts))
+        }
+
         // MARK: Delete
         
-        @Test func `It should delete segments`() async throws{
+        @Test func `It should delete segments`() {
             let segment = sampleWorkout.segments.last!
 
             store.deleteSegment(segment, for: sampleWorkout.id)
@@ -230,7 +265,7 @@ extension WorkoutStoreTests {
             #expect(store.workout(with: sampleWorkout.id)?.segments == sampleWorkout.segments.dropLast())
         }
         
-        @Test func `It should not delete non-existent segments`() async throws{
+        @Test func `It should not delete non-existent segments`() {
             let segment = Segment(exercise: .new)
 
             store.deleteSegment(segment, for: sampleWorkout.id)
@@ -238,7 +273,7 @@ extension WorkoutStoreTests {
             #expect(store.workouts == originalWorkouts)
         }
         
-        @Test func `It should save when deleting segments`() async throws{
+        @Test func `It should save when deleting segments`() async throws {
             let segment = sampleWorkout.segments.last!
 
             store.deleteSegment(segment, for: sampleWorkout.id)
@@ -273,7 +308,7 @@ extension WorkoutStoreTests {
 
         // MARK: Create
         
-        @Test func `It should create sets`() async throws{
+        @Test func `It should create sets`() {
             let newSet = Segment.Set.sampleBarbell
 
             let createdSet = store.createSet(newSet, segmentId: sampleSegment.id, workoutId: sampleWorkout.id)
@@ -282,7 +317,7 @@ extension WorkoutStoreTests {
             #expect(store.sets(segmentId: sampleSegment.id, workoutId: sampleWorkout.id) == sampleSegment.sets + [newSet])
         }
         
-        @Test func `It should save when creating sets`() async throws{
+        @Test func `It should save when creating sets`() async throws {
             let newSet = Segment.Set.sampleBarbell
 
             store.createSet(newSet, segmentId: sampleSegment.id, workoutId: sampleWorkout.id)
@@ -293,24 +328,30 @@ extension WorkoutStoreTests {
         
         // MARK: Read
         
-        @Test func `It should return sets`() async throws{
+        @Test func `It should return sets`() {
             let sets = store.sets(segmentId: sampleSegment.id, workoutId: sampleWorkout.id)
             #expect(sets?.isEmpty == false)
         }
-        
-        @Test func `It should not returns sets for non-existent workout`() async throws{
+
+        @Test func `It should return a set`() {
+            let setId = sampleSegment.sets.first!.id
+            let set = store.set(setId: setId, segmentId: sampleSegment.id, workoutId: sampleWorkout.id)
+            #expect(set == sampleSegment.sets.first)
+        }
+
+        @Test func `It should not returns sets for non-existent workout`() {
             let sets = store.sets(segmentId: sampleSegment.id, workoutId: .new)
             #expect(sets == nil)
         }
         
-        @Test func `It should not returns sets for non-existent segment`() async throws{
+        @Test func `It should not returns sets for non-existent segment`() {
             let sets = store.sets(segmentId: .new, workoutId: sampleWorkout.id)
             #expect(sets == nil)
         }
         
         // MARK: Update
         
-        @Test func `It should not update non-existent sets`() async throws{
+        @Test func `It should not update non-existent sets`() {
             let newSet = Segment.Set.sampleBarbell
 
             let createdSet = store.updateSet(newSet, segmentId: sampleSegment.id, workoutId: sampleWorkout.id)
@@ -319,18 +360,26 @@ extension WorkoutStoreTests {
             #expect(store.workouts == originalWorkouts)
         }
         
-        @Test func `It should update existing sets`() async throws{
-            var set = sampleSegment.sets.last!
-            set.repetitions = 5
-            set.weight = Weight(distribution: .total(0), units: .kilograms)
+        @Test func `It should update existing sets`() {
+            var sample: Segment.Set!
 
-            let updatedSet = store.updateSet(set, segmentId: sampleSegment.id, workoutId: sampleWorkout.id)
+            let updatedSet = store.updateSet(
+                with: sampleSegment.sets.last!.id,
+                segmentId: sampleSegment.id,
+                workoutId: sampleWorkout.id
+            ) { set in
+                set.repetitions = 5
+                set.weight = Weight(distribution: .total(0), units: .kilograms)
 
-            #expect(updatedSet == set)
-            #expect(store.sets(segmentId: sampleSegment.id, workoutId: sampleWorkout.id) == sampleSegment.sets.dropLast() + [set])
+                sample = set
+            }
+
+            #expect(updatedSet == sample)
+            let expectedSets = sampleSegment.sets.map { $0.id == sample.id ? sample : $0 }
+            #expect(store.sets(segmentId: sampleSegment.id, workoutId: sampleWorkout.id) == expectedSets)
         }
         
-        @Test func `It should save when updating sets`() async throws{
+        @Test func `It should save when updating sets`() async throws {
             var set = sampleSegment.sets.last!
             set.repetitions = 5
             set.weight = Weight(distribution: .total(0), units: .kilograms)
@@ -343,7 +392,7 @@ extension WorkoutStoreTests {
         
         // MARK: Delete
         
-        @Test func `It should delete sets`() async throws{
+        @Test func `It should delete sets`() {
             let set = sampleSegment.sets.last!
 
             store.deleteSet(set, segmentId: sampleSegment.id, workoutId: sampleWorkout.id)
@@ -351,7 +400,7 @@ extension WorkoutStoreTests {
             #expect(store.sets(segmentId: sampleSegment.id, workoutId: sampleWorkout.id) == sampleSegment.sets.dropLast())
         }
         
-        @Test func `It should not delete non-existent sets`() async throws{
+        @Test func `It should not delete non-existent sets`() {
             let set = Segment.Set.sampleTotal
 
             store.deleteSet(set, segmentId: sampleSegment.id, workoutId: sampleWorkout.id)
@@ -359,7 +408,7 @@ extension WorkoutStoreTests {
             #expect(store.workouts == originalWorkouts)
         }
         
-        @Test func `It should save when deleting sets`() async throws{
+        @Test func `It should save when deleting sets`() async throws {
             let set = sampleSegment.sets.last!
 
             store.deleteSet(set, segmentId: sampleSegment.id, workoutId: sampleWorkout.id)
@@ -392,7 +441,7 @@ extension WorkoutStoreTests {
 
         // MARK: Create
         
-        @Test func `It should create exercises`() async throws{
+        @Test func `It should create exercises`() {
             let newExercise = Exercise(name: "New")
 
             let createdExercise = store.createExercise(newExercise)
@@ -401,7 +450,7 @@ extension WorkoutStoreTests {
             #expect(store.exercises == originalExercises + [newExercise])
         }
         
-        @Test func `It should save when creating exercises`() async throws{
+        @Test func `It should save when creating exercises`() async throws {
             let newExercise = Exercise(name: "New")
 
             store.createExercise(newExercise)
@@ -412,7 +461,7 @@ extension WorkoutStoreTests {
         
         // MARK: Update
         
-        @Test func `It should not update non-existent exercises`() async throws{
+        @Test func `It should not update non-existent exercises`() {
             let newExercise = Exercise(name: "New")
 
             let createdExercise = store.updateExercise(newExercise)
@@ -421,18 +470,20 @@ extension WorkoutStoreTests {
             #expect(store.exercises == originalExercises)
         }
         
-        @Test func `It should update existing exercises`() async throws{
-            var sample = sampleExercise
-            sample.name = "New"
+        @Test func `It should update existing exercises`() {
+            var sample: Exercise!
 
-            let updatedExercise = store.updateExercise(sample)
+            let updatedExercise = store.updateExercise(with: sampleExercise.id) { exercise in
+                exercise.name = "New"
+                sample = exercise
+            }
 
             #expect(updatedExercise == sample)
             let expectedExercises = originalExercises.map { $0.id == sampleExercise.id ? sample : $0}
             #expect(store.exercises == expectedExercises)
         }
         
-        @Test func `It should save when updating exercises`() async throws{
+        @Test func `It should save when updating exercises`() async throws {
             var sample = sampleExercise
             sample.name = "New"
 
@@ -444,7 +495,7 @@ extension WorkoutStoreTests {
         
         // MARK: Delete
         
-        @Test func `It should delete exercises`() async throws{
+        @Test func `It should delete exercises`() throws {
             let exercise = Exercise(name: "New")
             store.createExercise(exercise)
 
@@ -453,7 +504,7 @@ extension WorkoutStoreTests {
             #expect(store.exercises == originalExercises.filter({ $0.id != exercise.id }))
         }
         
-        @Test func `It should not delete non-existent exercises`() async throws{
+        @Test func `It should not delete non-existent exercises`() throws {
             let newExercise = Exercise(name: "New")
 
             try store.deleteExercise(newExercise)
@@ -462,7 +513,7 @@ extension WorkoutStoreTests {
         }
         
         @Test()
-        func `It should not delete exercises used by segments`() async throws{
+        func `It should not delete exercises used by segments`() throws {
             let exerciseId = try #require(store.workouts.first?.segments.first?.exercise)
             let exercise = try #require(store.exercise(with: exerciseId))
 
@@ -471,7 +522,7 @@ extension WorkoutStoreTests {
             }
         }
         
-        @Test func `It should save when deleting exercises`() async throws{
+        @Test func `It should save when deleting exercises`() async throws {
             let exercise = Exercise(name: "New")
             store.createExercise(exercise)
 

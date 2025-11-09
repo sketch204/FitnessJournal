@@ -9,12 +9,12 @@
     }
   ],
   "defaultOptions" : {
-    "codeCoverage" : false,
     "targetForVariableExpansion" : {
       "containerPath" : "container:FitnessJournal.xcodeproj",
       "identifier" : "2D6B32C92E6529AF00E7067B",
       "name" : "FitnessJournal"
-    }
+    },
+    "testExecutionOrdering" : "random"
   },
   "testTargets" : [
     {
