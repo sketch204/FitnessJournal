@@ -28,7 +28,10 @@ let package = Package(
         
         testTarget(
             name: "CoreTests",
-            dependencies: ["Core", "Data"]
+            dependencies: ["Core", "Data", "Persistance"],
+            resources: [
+                .process("Resources")
+            ]
         ),
         testTarget(
             name: "PersistanceTests",

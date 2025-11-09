@@ -3,62 +3,32 @@ import Testing
 @testable import Core
 import Data
 
-private func requireStoreLoad(_ persistor: MemoryWorkoutStorePersistor) async throws {
-    while await !persistor.events.contains(.loadWorkouts) {
-        await Task.yield()
-    }
-    while await !persistor.events.contains(.loadExercises) {
-        await Task.yield()
-    }
-    try await #require(persistor.events.contains(.loadWorkouts))
-    try await #require(persistor.events.contains(.loadExercises))
-}
-
-private func expectToEventuallySaveWorkouts(_ persistor: MemoryWorkoutStorePersistor) async {
-    while await !persistor.events.contains(.saveWorkouts) {
-        await Task.yield()
-    }
-    #expect(await persistor.events.contains(.saveWorkouts))
-}
-
-private func expectToEventuallySaveExercises(_ persistor: MemoryWorkoutStorePersistor) async {
-    while await !persistor.events.contains(.saveExercises) {
-        await Task.yield()
-    }
-    #expect(await persistor.events.contains(.saveExercises))
-}
-
 @Suite("WorkoutStore")
 struct WorkoutStoreTests {
-    let sampleWorkout: Workout
-    let sampleSegment: Segment
-    let persistor: MemoryWorkoutStorePersistor
+    let persistor: SpyWorkoutStorePersistor
     let store: WorkoutStore
     
     init() {
-        let workout = Workout.sample
-        sampleWorkout = workout
-        sampleSegment = workout.segments.first!
-        persistor = .memory(workouts: [workout])
+        persistor = SpyWorkoutStorePersistor()
         store = WorkoutStore(persistor: persistor)
     }
     
     // MARK: Init
     
-    @Test func itShouldLoadWorkoutsOnInit() async throws {
+    @Test func `It should load workouts on init`() async throws {
         try #require(store.workouts == [])
         
-        try await requireStoreLoad(persistor)
-        
-        #expect(await store.workouts == persistor.workouts)
+        try await persistor.waitUntilStoreLoad()
+
+        #expect(store.workouts.isEmpty == false)
     }
     
-    @Test func itShouldLoadExercisesOnInit() async throws {
+    @Test func `It should load exercises on init`() async throws {
         try #require(store.exercises == [])
         
-        try await requireStoreLoad(persistor)
-        
-        #expect(await store.exercises == persistor.exercises)
+        try await persistor.waitUntilStoreLoad()
+
+        #expect(store.exercises.isEmpty == false)
     }
 }
 
@@ -67,83 +37,100 @@ struct WorkoutStoreTests {
 extension WorkoutStoreTests {
     @Suite("Workout CRUD")
     struct WorkoutCRUD {
-        let sampleWorkout: Workout
-        let persistor: MemoryWorkoutStorePersistor
+        let persistor: SpyWorkoutStorePersistor
         let store: WorkoutStore
-        
+        let sampleWorkout: Workout
+        let originalWorkouts: [Workout]
+
         init() async throws {
-            let workout = Workout.sample
-            sampleWorkout = workout
-            persistor = .memory(workouts: [workout])
+            persistor = SpyWorkoutStorePersistor()
             store = WorkoutStore(persistor: persistor)
-            
-            try await requireStoreLoad(persistor)
+
+            try await persistor.waitUntilStoreLoad()
+
+            sampleWorkout = store.workouts.first!
+            originalWorkouts = store.workouts
         }
         
         // MARK: Create
         
-        @Test func itShouldCreateWorkouts() async throws{
-            let newWorkout = Workout(id: .new, date: Date(), segments: [
-                .sampleLegExtensions
-            ])
+        @Test func `it should create workouts`() async throws{
+            let newWorkout = Workout()
             let createdWorkout = store.createWorkout(newWorkout)
             #expect(createdWorkout == newWorkout)
-            #expect(store.workouts == [sampleWorkout, newWorkout])
+            #expect(store.workouts == originalWorkouts + [newWorkout])
         }
         
-        @Test func itShouldSaveWhenCreatingWorkouts() async throws {
-            let newWorkout = Workout(id: .new, date: Date(), segments: [
-                .sampleLegExtensions
-            ])
+        @Test func `It should save when creating workouts`() async throws {
+            let newWorkout = Workout()
             store.createWorkout(newWorkout)
-            await expectToEventuallySaveWorkouts(persistor)
+
+            try await persistor.waitUntilEvent(.saveWorkouts)
+            #expect(persistor.events.contains(.saveWorkouts))
         }
-        
+
+        // MARK: Read
+
+        @Test func `It should return workouts`() async throws {
+            #expect(store.workout(with: sampleWorkout.id) == sampleWorkout)
+        }
+
+        @Test func `It should not return non-existent workouts`() async throws {
+            #expect(store.workout(with: .new) == nil)
+        }
+
         // MARK: Update
         
-        @Test func itShouldNotUpdateMissingWorkouts() async throws{
-            let newWorkout = Workout(id: .new, date: Date(), segments: [
-                .sampleLegExtensions
-            ])
+        @Test func `It should not update missing workouts`() async throws{
+            let newWorkout = Workout()
             let createdWorkout = store.updateWorkout(newWorkout)
             #expect(createdWorkout == nil)
-            #expect(store.workouts == [sampleWorkout])
+            #expect(store.workouts == originalWorkouts)
         }
         
-        @Test func itShouldUpdateExistingWorkouts() async throws{
+        @Test func `It should update existing workouts`() async throws{
             var sample = sampleWorkout
             sample.date = Date()
             sample.segments.removeLast()
+
             let updatedWorkout = store.updateWorkout(sample)
+
             #expect(updatedWorkout == sample)
-            #expect(store.workouts == [sample])
+            let expectedWorkouts = originalWorkouts.map {
+                $0.id == sample.id ? sample : $0
+            }
+            #expect(store.workouts == expectedWorkouts)
         }
         
-        @Test func itShouldSaveWhenUpdatingWorkouts() async throws {
+        @Test func `It should save when updating workouts`() async throws {
             var sample = sampleWorkout
             sample.segments.removeLast()
+
             store.updateWorkout(sample)
-            await expectToEventuallySaveWorkouts(persistor)
+
+            try await persistor.waitUntilEvent(.saveWorkouts)
+            #expect(persistor.events.contains(.saveWorkouts))
         }
         
         // MARK: Delete
         
-        @Test func itShouldDeleteWorkouts() async throws{
+        @Test func `It should delete workouts`() async throws{
             store.deleteWorkout(sampleWorkout)
-            #expect(store.workouts == [])
+
+            #expect(store.workouts == originalWorkouts.filter({ $0.id != sampleWorkout.id }))
         }
         
-        @Test func itShouldNotDeleteNonExistentWorkouts() async throws{
-            let newWorkout = Workout(id: .new, date: Date(), segments: [
-                .sampleLegExtensions
-            ])
+        @Test func `It should not delete non-existent workouts`() async throws{
+            let newWorkout = Workout()
             store.deleteWorkout(newWorkout)
-            #expect(store.workouts == [sampleWorkout])
+            #expect(store.workouts == originalWorkouts)
         }
         
-        @Test func itShouldSaveWhenDeletingWorkouts() async throws {
+        @Test func `It should save when deleting workouts`() async throws {
             store.deleteWorkout(sampleWorkout)
-            await expectToEventuallySaveWorkouts(persistor)
+
+            try await persistor.waitUntilEvent(.saveWorkouts)
+            #expect(persistor.events.contains(.saveWorkouts))
         }
     }
 }
@@ -153,90 +140,111 @@ extension WorkoutStoreTests {
 extension WorkoutStoreTests {
     @Suite("Segments CRUD")
     struct SegmentsCRUD {
-        let sampleWorkout: Workout
-        let persistor: MemoryWorkoutStorePersistor
+        let persistor: SpyWorkoutStorePersistor
         let store: WorkoutStore
-        
+        let sampleWorkout: Workout
+        let originalWorkouts: [Workout]
+
         init() async throws {
-            let workout = Workout.sample
-            sampleWorkout = workout
-            persistor = .memory(workouts: [workout])
+            persistor = SpyWorkoutStorePersistor()
             store = WorkoutStore(persistor: persistor)
-            
-            try await requireStoreLoad(persistor)
+
+            try await persistor.waitUntilStoreLoad()
+
+            sampleWorkout = store.workouts.first!
+            originalWorkouts = store.workouts
         }
-        
+
         // MARK: Create
         
-        @Test func itShouldCreateSegments() async throws{
+        @Test func `It should create segments`() async throws{
             let newSegment = Segment.sampleLegExtensions
+
             let createdSegment = store.createSegment(newSegment, for: sampleWorkout.id)
+
             #expect(createdSegment == newSegment)
-            #expect(store.workouts.first?.segments == sampleWorkout.segments + [newSegment])
+            #expect(store.workout(with: sampleWorkout.id)?.segments == sampleWorkout.segments + [newSegment])
         }
         
-        @Test func itShouldSaveWhenCreatingSegments() async throws{
+        @Test func `It should save when creating segments`() async throws{
             let newSegment = Segment.sampleLegExtensions
+
             store.createSegment(newSegment, for: sampleWorkout.id)
-            await expectToEventuallySaveWorkouts(persistor)
+
+            try await persistor.waitUntilEvent(.saveWorkouts)
+            #expect(persistor.events.contains(.saveWorkouts))
         }
         
         // MARK: Read
         
-        @Test func itShouldReturnSegments() async throws{
+        @Test func `It should return segments`() async throws{
             let segments = store.segments(for: sampleWorkout.id)
             #expect(segments?.isEmpty == false)
         }
         
-        @Test func itShouldNotReturnSegmentsForNonExistentWorkout() async throws{
-            let segments = store.segments(for: Workout.sample.id)
+        @Test func `It should not return segments for non-existent workouts`() async throws{
+            let segments = store.segments(for: .new)
             #expect(segments == nil)
         }
         
         // MARK: Update
         
-        @Test func itShouldNotUpdateMissingSegments() async throws{
-            let newSegment = Segment.sampleLegExtensions
+        @Test func `It should not update non-existent segments`() async throws{
+            let newSegment = Segment(exercise: .new)
+
             let createdSegment = store.updateSegment(newSegment, for: sampleWorkout.id)
+
             #expect(createdSegment == nil)
-            #expect(store.workouts == [sampleWorkout])
+            #expect(store.workouts == originalWorkouts)
         }
         
-        @Test func itShouldUpdateExistingSegments() async throws{
+        @Test func `It should update existing segments`() async throws{
             var segment = sampleWorkout.segments.last!
             segment.exercise = .new
             segment.sets.removeLast()
+
             let updatedSegment = store.updateSegment(segment, for: sampleWorkout.id)
+
             #expect(updatedSegment == segment)
-            #expect(store.workouts.first?.segments == sampleWorkout.segments.dropLast() + [segment])
+            #expect(store.workout(with: sampleWorkout.id)?.segments == sampleWorkout.segments.dropLast() + [segment])
         }
         
-        @Test func itShouldSaveWhenUpdatingSegments() async throws{
+        @Test func `It should save when updating segments`() async throws{
             var segment = sampleWorkout.segments.last!
             segment.exercise = .new
             segment.sets.removeLast()
+
             store.updateSegment(segment, for: sampleWorkout.id)
-            await expectToEventuallySaveWorkouts(persistor)
+
+            try await persistor.waitUntilEvent(.saveWorkouts)
+            #expect(persistor.events.contains(.saveWorkouts))
         }
         
         // MARK: Delete
         
-        @Test func itShouldDeleteSegments() async throws{
+        @Test func `It should delete segments`() async throws{
             let segment = sampleWorkout.segments.last!
+
             store.deleteSegment(segment, for: sampleWorkout.id)
-            #expect(store.workouts.first?.segments == sampleWorkout.segments.dropLast())
+
+            #expect(store.workout(with: sampleWorkout.id)?.segments == sampleWorkout.segments.dropLast())
         }
         
-        @Test func itShouldNotDeleteNonExistentSegments() async throws{
-            let segment = Segment.sampleLegExtensions
+        @Test func `It should not delete non-existent segments`() async throws{
+            let segment = Segment(exercise: .new)
+
             store.deleteSegment(segment, for: sampleWorkout.id)
-            #expect(store.workouts == [sampleWorkout])
+
+            #expect(store.workouts == originalWorkouts)
         }
         
-        @Test func itShouldSaveWhenDeletingSegments() async throws{
+        @Test func `It should save when deleting segments`() async throws{
             let segment = sampleWorkout.segments.last!
+
             store.deleteSegment(segment, for: sampleWorkout.id)
-            await expectToEventuallySaveWorkouts(persistor)
+
+            try await persistor.waitUntilEvent(.saveWorkouts)
+            #expect(persistor.events.contains(.saveWorkouts))
         }
     }
 }
@@ -246,100 +254,118 @@ extension WorkoutStoreTests {
 extension WorkoutStoreTests {
     @Suite("Sets CRUD")
     struct SetsCRUD {
+        let persistor: SpyWorkoutStorePersistor
+        let store: WorkoutStore
         let sampleWorkout: Workout
         let sampleSegment: Segment
-        let persistor: MemoryWorkoutStorePersistor
-        let store: WorkoutStore
-        
+        let originalWorkouts: [Workout]
+
         init() async throws {
-            let workout = Workout.sample
-            sampleWorkout = workout
-            sampleSegment = workout.segments.first!
-            persistor = .memory(workouts: [workout])
+            persistor = SpyWorkoutStorePersistor()
             store = WorkoutStore(persistor: persistor)
-            
-            try await requireStoreLoad(persistor)
+
+            try await persistor.waitUntilStoreLoad()
+
+            originalWorkouts = store.workouts
+            sampleWorkout = store.workouts.first!
+            sampleSegment = sampleWorkout.segments.first!
         }
-        
+
         // MARK: Create
         
-        @Test func itShouldCreateSets() async throws{
+        @Test func `It should create sets`() async throws{
             let newSet = Segment.Set.sampleBarbell
+
             let createdSet = store.createSet(newSet, segmentId: sampleSegment.id, workoutId: sampleWorkout.id)
+
             #expect(createdSet == newSet)
-            #expect(store.workouts.first?.segments.first!.sets == sampleSegment.sets + [newSet])
+            #expect(store.sets(segmentId: sampleSegment.id, workoutId: sampleWorkout.id) == sampleSegment.sets + [newSet])
         }
         
-        @Test func itShouldSaveWhenCreatingSets() async throws{
+        @Test func `It should save when creating sets`() async throws{
             let newSet = Segment.Set.sampleBarbell
+
             store.createSet(newSet, segmentId: sampleSegment.id, workoutId: sampleWorkout.id)
-            await expectToEventuallySaveWorkouts(persistor)
+
+            try await persistor.waitUntilEvent(.saveWorkouts)
+            #expect(persistor.events.contains(.saveWorkouts))
         }
         
         // MARK: Read
         
-        @Test func itShouldReturnSets() async throws{
-            try await requireStoreLoad(persistor)
+        @Test func `It should return sets`() async throws{
             let sets = store.sets(segmentId: sampleSegment.id, workoutId: sampleWorkout.id)
             #expect(sets?.isEmpty == false)
         }
         
-        @Test func itShouldNotReturnSetsForNonExistentWorkout() async throws{
-            try await requireStoreLoad(persistor)
+        @Test func `It should not returns sets for non-existent workout`() async throws{
             let sets = store.sets(segmentId: sampleSegment.id, workoutId: .new)
             #expect(sets == nil)
         }
         
-        @Test func itShouldNotReturnSetsForNonExistentExercise() async throws{
-            try await requireStoreLoad(persistor)
+        @Test func `It should not returns sets for non-existent segment`() async throws{
             let sets = store.sets(segmentId: .new, workoutId: sampleWorkout.id)
             #expect(sets == nil)
         }
         
         // MARK: Update
         
-        @Test func itShouldNotUpdateMissingSets() async throws{
+        @Test func `It should not update non-existent sets`() async throws{
             let newSet = Segment.Set.sampleBarbell
+
             let createdSet = store.updateSet(newSet, segmentId: sampleSegment.id, workoutId: sampleWorkout.id)
+
             #expect(createdSet == nil)
-            #expect(store.workouts == [sampleWorkout])
+            #expect(store.workouts == originalWorkouts)
         }
         
-        @Test func itShouldUpdateExistingSets() async throws{
+        @Test func `It should update existing sets`() async throws{
             var set = sampleSegment.sets.last!
             set.repetitions = 5
             set.weight = Weight(distribution: .total(0), units: .kilograms)
+
             let updatedSet = store.updateSet(set, segmentId: sampleSegment.id, workoutId: sampleWorkout.id)
+
             #expect(updatedSet == set)
-            #expect(store.workouts.first?.segments.first?.sets == sampleSegment.sets.dropLast() + [set])
+            #expect(store.sets(segmentId: sampleSegment.id, workoutId: sampleWorkout.id) == sampleSegment.sets.dropLast() + [set])
         }
         
-        @Test func itShouldSaveWhenUpdatingSets() async throws{
+        @Test func `It should save when updating sets`() async throws{
             var set = sampleSegment.sets.last!
             set.repetitions = 5
             set.weight = Weight(distribution: .total(0), units: .kilograms)
+
             store.updateSet(set, segmentId: sampleSegment.id, workoutId: sampleWorkout.id)
-            await expectToEventuallySaveWorkouts(persistor)
+
+            try await persistor.waitUntilEvent(.saveWorkouts)
+            #expect(persistor.events.contains(.saveWorkouts))
         }
         
         // MARK: Delete
         
-        @Test func itShouldDeleteSets() async throws{
+        @Test func `It should delete sets`() async throws{
             let set = sampleSegment.sets.last!
+
             store.deleteSet(set, segmentId: sampleSegment.id, workoutId: sampleWorkout.id)
-            #expect(store.workouts.first?.segments.first?.sets == sampleSegment.sets.dropLast())
+
+            #expect(store.sets(segmentId: sampleSegment.id, workoutId: sampleWorkout.id) == sampleSegment.sets.dropLast())
         }
         
-        @Test func itShouldNotDeleteNonExistentSets() async throws{
+        @Test func `It should not delete non-existent sets`() async throws{
             let set = Segment.Set.sampleTotal
+
             store.deleteSet(set, segmentId: sampleSegment.id, workoutId: sampleWorkout.id)
-            #expect(store.workouts == [sampleWorkout])
+
+            #expect(store.workouts == originalWorkouts)
         }
         
-        @Test func itShouldSaveWhenDeletingSets() async throws{
+        @Test func `It should save when deleting sets`() async throws{
             let set = sampleSegment.sets.last!
+
             store.deleteSet(set, segmentId: sampleSegment.id, workoutId: sampleWorkout.id)
-            await expectToEventuallySaveWorkouts(persistor)
+
+            try await persistor.waitUntilEvent(.saveWorkouts)
+            #expect(persistor.events.contains(.saveWorkouts))
         }
     }
 }
@@ -349,88 +375,110 @@ extension WorkoutStoreTests {
 extension WorkoutStoreTests {
     @Suite("Exercises CRUD")
     class ExercisesCRUD {
+        let persistor: SpyWorkoutStorePersistor
+        let store: WorkoutStore
         let sampleExercise: Exercise
-        var persistor: MemoryWorkoutStorePersistor
-        var store: WorkoutStore
-        
-        init() async throws{
-            let exercise = Exercise.sample
-            sampleExercise = exercise
-            persistor = .memory(exercises: [exercise])
+        let originalExercises: [Exercise]
+
+        init() async throws {
+            persistor = SpyWorkoutStorePersistor()
             store = WorkoutStore(persistor: persistor)
-            
-            try await requireStoreLoad(persistor)
+
+            try await persistor.waitUntilStoreLoad()
+
+            originalExercises = store.exercises
+            sampleExercise = store.exercises.first!
         }
-        
+
         // MARK: Create
         
-        @Test func itShouldCreateExercises() async throws{
+        @Test func `It should create exercises`() async throws{
             let newExercise = Exercise(name: "New")
+
             let createdExercise = store.createExercise(newExercise)
+
             #expect(createdExercise == newExercise)
-            #expect(store.exercises == [sampleExercise, newExercise])
+            #expect(store.exercises == originalExercises + [newExercise])
         }
         
-        @Test func itShouldSaveWhenCreatingExercises() async throws{
+        @Test func `It should save when creating exercises`() async throws{
             let newExercise = Exercise(name: "New")
+
             store.createExercise(newExercise)
-            await expectToEventuallySaveExercises(persistor)
+
+            try await persistor.waitUntilEvent(.saveExercises)
+            #expect(persistor.events.contains(.saveExercises))
         }
         
         // MARK: Update
         
-        @Test func itShouldNotUpdateMissingExercises() async throws{
+        @Test func `It should not update non-existent exercises`() async throws{
             let newExercise = Exercise(name: "New")
+
             let createdExercise = store.updateExercise(newExercise)
+
             #expect(createdExercise == nil)
-            #expect(store.exercises == [sampleExercise])
+            #expect(store.exercises == originalExercises)
         }
         
-        @Test func itShouldUpdateExistingExercises() async throws{
+        @Test func `It should update existing exercises`() async throws{
             var sample = sampleExercise
             sample.name = "New"
+
             let updatedExercise = store.updateExercise(sample)
+
             #expect(updatedExercise == sample)
-            #expect(store.exercises == [sample])
+            let expectedExercises = originalExercises.map { $0.id == sampleExercise.id ? sample : $0}
+            #expect(store.exercises == expectedExercises)
         }
         
-        @Test func itShouldSaveWhenUpdatingExercises() async throws{
+        @Test func `It should save when updating exercises`() async throws{
             var sample = sampleExercise
             sample.name = "New"
+
             store.updateExercise(sample)
-            await expectToEventuallySaveExercises(persistor)
-            await expectToEventuallySaveWorkouts(persistor)
+
+            try await persistor.waitUntilEvent(.saveExercises)
+            #expect(persistor.events.contains(.saveExercises))
         }
         
         // MARK: Delete
         
-        @Test func itShouldDeleteExercises() async throws{
-            try store.deleteExercise(sampleExercise)
-            #expect(store.exercises == [])
+        @Test func `It should delete exercises`() async throws{
+            let exercise = Exercise(name: "New")
+            store.createExercise(exercise)
+
+            try store.deleteExercise(exercise)
+
+            #expect(store.exercises == originalExercises.filter({ $0.id != exercise.id }))
         }
         
-        @Test func itShouldNotDeleteNonExistentExercises() async throws{
+        @Test func `It should not delete non-existent exercises`() async throws{
             let newExercise = Exercise(name: "New")
+
             try store.deleteExercise(newExercise)
-            #expect(store.exercises == [sampleExercise])
+
+            #expect(store.exercises == originalExercises)
         }
         
-        @Test(.disabled("Need to fix test data sources"))
-        func itShouldNotDeleteExercisesUsedBySegments() async throws{
-//            let workout = Workout.sample
-//            let exercise = workout.segments.first!.exercise
-//            persistor = .memory(workouts: [workout], exercises: [exercise])
-//            store = WorkoutStore(persistor: persistor)
-//            try await requireStoreLoad(persistor)
-//            
-//            #expect(throws: WorkoutStoreError.self) {
-//                try self.store.deleteExercise(exercise)
-//            }
+        @Test()
+        func `It should not delete exercises used by segments`() async throws{
+            let exerciseId = try #require(store.workouts.first?.segments.first?.exercise)
+            let exercise = try #require(store.exercise(with: exerciseId))
+
+            #expect(throws: WorkoutStoreError.self) {
+                try self.store.deleteExercise(exercise)
+            }
         }
         
-        @Test func itShouldSaveWhenDeletingExercises() async throws{
-            try store.deleteExercise(sampleExercise)
-            await expectToEventuallySaveExercises(persistor)
+        @Test func `It should save when deleting exercises`() async throws{
+            let exercise = Exercise(name: "New")
+            store.createExercise(exercise)
+
+            try store.deleteExercise(exercise)
+
+            try await persistor.waitUntilEvent(.saveExercises)
+            #expect(persistor.events.contains(.saveExercises))
         }
     }
 }

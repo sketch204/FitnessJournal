@@ -45,8 +45,9 @@ public actor FileWorkoutStorePersistor {
         }
     }
     
-    private func loadData() async {
+    private func loadData() {
         guard FileManager.default.fileExists(atPath: fileUrl.path(percentEncoded: false)) else {
+            Log.core.trace("Data file does not exist! Initializing new store")
             self.data = DataWrapper(version: Self.currentSchemaVersion)
             return
         }
@@ -61,7 +62,7 @@ public actor FileWorkoutStorePersistor {
         }
     }
     
-    private func saveData(_ data: DataWrapper) async {
+    private func saveData(_ data: DataWrapper) {
         do {
             let fileData = try encoder.encode(data)
             try fileData.write(to: fileUrl, options: .atomic)
@@ -74,30 +75,30 @@ public actor FileWorkoutStorePersistor {
         data?.workouts ?? []
     }
     
-    public func saveWorkouts(_ workouts: [Workout]) async {
+    public func saveWorkouts(_ workouts: [Workout]) {
         guard data != nil else {
             Log.core.critical("Could not save workouts because no data was loaded!")
             return
         }
         self.data?.workouts = workouts
-        await saveData(data!)
+        saveData(data!)
     }
     
     public func loadExercises() -> [Exercise] {
         data?.exercises ?? []
     }
     
-    public func saveExercises(_ exercises: [Exercise]) async {
+    public func saveExercises(_ exercises: [Exercise]) {
         guard data != nil else {
             Log.core.critical("Could not save exercises because no data was loaded!")
             return
         }
         data?.exercises = exercises
-        await saveData(data!)
+        saveData(data!)
     }
 
-    public func setFileUrl(_ url: URL) async {
+    public func setFileUrl(_ url: URL) {
         fileUrl = url
-        await loadData()
+        loadData()
     }
 }

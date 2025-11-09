@@ -10,7 +10,7 @@ import Foundation
 @testable import Persistance
 import Testing
 
-@Suite("Migration V1 to V2 tests")
+@Suite("Migration V1 to V2")
 struct MigrationV1toV2Tests {
     @Test
     func `Segment should initialize from v1 data`() async throws {
