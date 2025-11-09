@@ -61,12 +61,12 @@ public struct WorkoutsListView: View {
 
 #Preview("Default") {
     NavigationStack {
-        WorkoutsListView(store: .previewFile())
+        WorkoutsListView(store: .preview())
     }
 }
 
 #Preview("No workouts") {
-    let store = WorkoutStore.previewFile(fileUrl: URL.documentsDirectory.appending(path: "doesNotExist"))
+    let store = WorkoutStore.preview(fileUrl: URL.documentsDirectory.appending(path: "doesNotExist"))
 
     NavigationStack {
         WorkoutsListView(store: store)

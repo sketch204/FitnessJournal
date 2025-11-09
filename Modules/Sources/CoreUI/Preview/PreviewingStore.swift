@@ -18,7 +18,7 @@ struct PreviewingStore<Content: View>: View {
     let content: (WorkoutStore) -> Content
 
     init(
-        store: WorkoutStore = .previewFile(),
+        store: WorkoutStore = .preview(),
         executing storeSetup: ((WorkoutStore) -> Void)? = nil,
         @ViewBuilder content: @escaping (WorkoutStore) -> Content
     ) {

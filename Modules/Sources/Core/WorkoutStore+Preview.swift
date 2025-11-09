@@ -13,21 +13,6 @@ import Persistance
 
 public extension WorkoutStore {
     static func preview(
-        workouts: [Workout] = [.sample],
-        extraExercises: [Exercise] = [],
-        executing setup: ((WorkoutStore) -> Void)? = nil
-    ) -> Self {
-        let output = Self(
-            persistor: .preview(
-                workouts: workouts,
-                extraExercises: extraExercises
-            )
-        )
-        setup?(output)
-        return output
-    }
-
-    static func previewFile(
         fileUrl: URL = FileWorkoutStorePersistor.sampleFileUrl,
         executing setup: ((WorkoutStore) -> Void)? = nil
     ) -> Self {
