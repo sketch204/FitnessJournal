@@ -137,39 +137,44 @@ struct SegmentView: View {
 }
 
 #Preview("Default") {
-    let workout = Workout.sample
-    let segment = workout.segments.first!
-    let store = WorkoutStore.preview(workouts: [workout])
-    
-    NavigationStack {
-        SegmentView(
-            store: store,
-            navigation: .init(
-                workoutId: workout.id,
-                segmentId: segment.id
+    PreviewingStore { store in
+        let workout = store.workouts.first!
+        let segment = workout.segments.first!
+
+        NavigationStack {
+            SegmentView(
+                store: store,
+                navigation: .init(
+                    workoutId: workout.id,
+                    segmentId: segment.id
+                )
             )
-        )
-        .registerEditSetHandler(store: store)
+            .registerEditSetHandler(store: store)
+        }
+        .environment(\.appActions, AppActions())
     }
-    .environment(\.appActions, AppActions())
 }
 
-#Preview("Empty Exercise") {
-    let workout = Workout.sample
-    let segment = Segment(exercise: .new, sets: [])
-    let store = WorkoutStore.preview(workouts: [workout]) {
-        $0.createSegment(segment, for: $0.workouts.first!.id)
-    }
-    
-    NavigationStack {
-        SegmentView(
-            store: store,
-            navigation: .init(
-                workoutId: workout.id,
-                segmentId: segment.id
-            )
+#Preview("Empty Segment") {
+    PreviewingStore { store in
+        store.createSegment(
+            Segment(exercise: store.exercises.first!.id, sets: []),
+            for: store.workouts.first!.id
         )
-        .registerEditSetHandler(store: store)
+    } content: { store in
+        let workout = store.workouts.first!
+        let segment = workout.segments.last!
+
+        NavigationStack {
+            SegmentView(
+                store: store,
+                navigation: .init(
+                    workoutId: workout.id,
+                    segmentId: segment.id
+                )
+            )
+            .registerEditSetHandler(store: store)
+        }
+        .environment(\.appActions, AppActions())
     }
-    .environment(\.appActions, AppActions())
 }

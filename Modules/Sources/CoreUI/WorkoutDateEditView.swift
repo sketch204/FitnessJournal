@@ -45,8 +45,9 @@ struct WorkoutDateEditView: View {
 }
 
 #Preview {
-    let store = WorkoutStore.preview()
-    let workout = store.workouts.first!
-    
-    WorkoutDateEditView(store: store, workoutId: workout.id)
+    PreviewingStore { store in
+        let workout = store.workouts.first!
+
+        WorkoutDateEditView(store: store, workoutId: workout.id)
+    }
 }

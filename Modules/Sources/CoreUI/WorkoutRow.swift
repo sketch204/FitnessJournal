@@ -44,12 +44,14 @@ struct WorkoutRow: View {
 }
 
 #Preview {
-    @Previewable @State var store = WorkoutStore.preview()
+    PreviewingStore { store in
+        let workout = store.workouts.first!
 
-    List {
-        WorkoutRow(store: store, workout: .sample)
-        WorkoutRow(store: store, workout: .sample)
-        WorkoutRow(store: store, workout: .sample)
+        List {
+            WorkoutRow(store: store, workout: workout)
+            WorkoutRow(store: store, workout: workout)
+            WorkoutRow(store: store, workout: workout)
+        }
+        .listStyle(.plain)
     }
-    .listStyle(.plain)
 }

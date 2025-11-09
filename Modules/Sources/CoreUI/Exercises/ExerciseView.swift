@@ -99,28 +99,29 @@ struct ExerciseView: View {
 }
 
 #Preview("Default") {
-    let workout = Workout.sample
-    let exercise = workout.segments.first!.exercise
-    let store = WorkoutStore.preview(workouts: [workout])
-    
-    NavigationStack {
-        ExerciseView(store: store, exerciseId: exercise)
+    PreviewingStore { store in
+        NavigationStack {
+            ExerciseView(store: store, exerciseId: store.exercises.first!.id)
+        }
     }
 }
 
 #Preview("Unknown") {
-    let store = WorkoutStore.preview()
-    
-    NavigationStack {
-        ExerciseView(store: store, exerciseId: .new)
+    PreviewingStore { store in
+        NavigationStack {
+            ExerciseView(store: store, exerciseId: .new)
+        }
     }
 }
 
 #Preview("Empty") {
     let exercise = Exercise(name: "Empty Exercise")
-    let store = WorkoutStore.preview(extraExercises: [exercise])
-    
-    NavigationStack {
-        ExerciseView(store: store, exerciseId: exercise.id)
+
+    PreviewingStore { store in
+        store.createExercise(exercise)
+    } content: { store in
+        NavigationStack {
+            ExerciseView(store: store, exerciseId: exercise.id)
+        }
     }
 }

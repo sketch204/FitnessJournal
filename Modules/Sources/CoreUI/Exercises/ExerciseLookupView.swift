@@ -156,11 +156,11 @@ struct ExerciseLookupView: View {
 }
 
 #Preview {
-    let store = WorkoutStore.preview()
-    
-    NavigationStack {
-        ExerciseLookupView(store: store) { exercise in
-            print("Did select \(exercise)")
+    PreviewingStore { store in
+        NavigationStack {
+            ExerciseLookupView(store: store) { exercise in
+                print("Did select \(exercise)")
+            }
         }
     }
 }

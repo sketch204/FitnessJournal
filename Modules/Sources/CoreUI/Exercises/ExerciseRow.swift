@@ -72,12 +72,12 @@ struct ExerciseRow: View {
 }
 
 #Preview {
-    @Previewable @State var store = WorkoutStore.preview()
-    
-    let exercises = store.exercises.sorted(by: { $0.name < $1.name })
-    
-    List(exercises) { exercise in
-        ExerciseRow(store: store, exerciseId: exercise.id)
+    PreviewingStore { store in
+        let exercises = store.exercises.sorted(by: { $0.name < $1.name })
+
+        List(exercises) { exercise in
+            ExerciseRow(store: store, exerciseId: exercise.id)
+        }
+        .listStyle(.plain)
     }
-    .listStyle(.plain)
 }

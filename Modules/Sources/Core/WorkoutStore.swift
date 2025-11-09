@@ -18,16 +18,6 @@ public protocol WorkoutStorePersistor: Sendable {
     func saveExercises(_ exercises: [Exercise]) async throws
 }
 
-extension WorkoutStorePersistor where Self == FileWorkoutStorePersistor {
-    public static var file: Self {
-        .file()
-    }
-
-    public static func file(_ fileUrl: URL = FileWorkoutStorePersistor.defaultFileUrl) -> Self {
-        Self(fileUrl: fileUrl)
-    }
-}
-
 
 // MARK: WorkoutStore
 

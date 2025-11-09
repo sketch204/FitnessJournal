@@ -54,17 +54,18 @@ struct SetEditView: View {
 }
 
 #Preview {
-    let store = WorkoutStore.preview()
-    let workout = store.workouts.first!
-    let segment = store.segments(for: workout.id)!.first!
-    let set = store.sets(segmentId: segment.id, workoutId: workout.id)!.first!
-    
-    SetEditView(
-        store: store,
-        navigation: SetNavigation(
-            workoutId: workout.id,
-            segmentId: segment.id,
-            setId: set.id
+    PreviewingStore { store in
+        let workout = store.workouts.first!
+        let segment = store.segments(for: workout.id)!.first!
+        let set = store.sets(segmentId: segment.id, workoutId: workout.id)!.first!
+
+        SetEditView(
+            store: store,
+            navigation: SetNavigation(
+                workoutId: workout.id,
+                segmentId: segment.id,
+                setId: set.id
+            )
         )
-    )
+    }
 }

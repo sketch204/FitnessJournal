@@ -15,7 +15,13 @@ let package = Package(
     targets: [
         target(name: "CoreUI", dependencies: ["Core", "Data", "Utils"]),
         target(name: "Core", dependencies: ["Data", "Persistance", "Utils"]),
-        target(name: "Persistance", dependencies: ["Data", "Utils"]),
+        target(
+            name: "Persistance",
+            dependencies: ["Data", "Utils"],
+            resources: [
+                .process("Resources")
+            ]
+        ),
         target(name: "Data"),
         target(name: "Utils"),
 
@@ -35,10 +41,11 @@ let package = Package(
     ]
 )
 
-func target(name: String, dependencies: [Target.Dependency] = []) -> Target {
+func target(name: String, dependencies: [Target.Dependency] = [], resources: [Resource]? = nil) -> Target {
     .target(
         name: name,
         dependencies: dependencies,
+        resources: resources,
         swiftSettings: [
             .defaultIsolation(MainActor.self),
             .enableUpcomingFeature("NonisolatedNonsendingByDefault"),
@@ -47,10 +54,11 @@ func target(name: String, dependencies: [Target.Dependency] = []) -> Target {
     )
 }
 
-func testTarget(name: String, dependencies: [Target.Dependency] = []) -> Target {
+func testTarget(name: String, dependencies: [Target.Dependency] = [], resources: [Resource]? = nil) -> Target {
     .testTarget(
         name: name,
         dependencies: dependencies,
+        resources: resources,
         swiftSettings: [
             .defaultIsolation(MainActor.self),
             .enableUpcomingFeature("NonisolatedNonsendingByDefault"),

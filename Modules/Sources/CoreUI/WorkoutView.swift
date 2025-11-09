@@ -89,21 +89,22 @@ public struct WorkoutView: View {
 }
 
 #Preview("Default") {
-    let workout = Workout.sample
-    let store = WorkoutStore.preview(workouts: [workout])
-    
-    NavigationStack {
-        WorkoutView(
-            store: store,
-            workoutId: workout.id
-        )
-        .navigationDestination(for: SegmentNavigation.self) { navigation in
-            SegmentView(store: store, navigation: navigation)
+    PreviewingStore { store in
+        let workout = store.workouts.first!
+
+        NavigationStack {
+            WorkoutView(
+                store: store,
+                workoutId: workout.id
+            )
+            .navigationDestination(for: SegmentNavigation.self) { navigation in
+                SegmentView(store: store, navigation: navigation)
+            }
+            .registerEditWorkoutHandler(store: store)
+            .registerSelectExerciseHandler(store: store)
         }
-        .registerEditWorkoutHandler(store: store)
-        .registerSelectExerciseHandler(store: store)
+        .environment(\.appActions, AppActions())
     }
-    .environment(\.appActions, AppActions())
 }
 
 #Preview("Empty Workout") {

@@ -61,32 +61,14 @@ public struct WorkoutsListView: View {
 
 #Preview("Default") {
     NavigationStack {
-        WorkoutsListView(store: .preview())
+        WorkoutsListView(store: .previewFile())
     }
 }
 
 #Preview("No workouts") {
-    NavigationStack {
-        WorkoutsListView(store: .preview(workouts: []))
-    }
-}
+    let store = WorkoutStore.previewFile(fileUrl: URL.documentsDirectory.appending(path: "doesNotExist"))
 
-#Preview("Many Workouts") {
     NavigationStack {
-        WorkoutsListView(
-            store: .preview(
-                workouts: [
-                    .init(),
-                    .init(),
-                    .init(),
-                    .init(),
-                    .init(),
-                    .init(),
-                    .init(),
-                    .init(),
-                    .init(),
-                ]
-            )
-        )
+        WorkoutsListView(store: store)
     }
 }

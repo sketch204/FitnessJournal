@@ -35,7 +35,7 @@ public struct RootView: View {
 }
 
 #Preview {
-    let store = WorkoutStore.preview()
+    @Previewable @State var store = WorkoutStore.previewFile()
     
     RootView(workoutStore: store)
 }

@@ -41,12 +41,12 @@ struct SegmentRow: View {
 }
 
 #Preview("Default") {
-    @Previewable @State var store = WorkoutStore.preview()
+    PreviewingStore { store in
+        let workout = store.workouts.first!
 
-    List {
-        SegmentRow(store: store, segment: .sampleBenchPress)
-        SegmentRow(store: store, segment: .sampleDeadlifts)
-        SegmentRow(store: store, segment: .sampleChestFlys)
+        List(workout.segments) { segment in
+            SegmentRow(store: store, segment: segment)
+        }
+        .listStyle(.plain)
     }
-    .listStyle(.plain)
 }
