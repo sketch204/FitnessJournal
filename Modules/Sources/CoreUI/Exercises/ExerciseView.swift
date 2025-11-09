@@ -104,7 +104,7 @@ struct ExerciseView: View {
     let store = WorkoutStore.preview(workouts: [workout])
     
     NavigationStack {
-        ExerciseView(store: store, exerciseId: exercise.id)
+        ExerciseView(store: store, exerciseId: exercise)
     }
 }
 

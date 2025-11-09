@@ -37,7 +37,7 @@ public struct WorkoutView: View {
                             segmentId: segment.id
                         )
                     ) {
-                        SegmentRow(segment)
+                        SegmentRow(store: store, segment: segment)
                     }
                 }
                 .onMove(perform: { sourceIndices, targetIndex in
@@ -70,7 +70,7 @@ public struct WorkoutView: View {
     }
     
     private func createSegment(with exercise: Exercise) {
-        let segment = Segment(exercise: exercise)
+        let segment = Segment(exercise: exercise.id)
         store.createSegment(segment, for: workoutId)
         
         appActions.perform(NavigateToSegmentAction(workoutId: workoutId, segmentId: segment.id))

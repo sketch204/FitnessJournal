@@ -20,7 +20,7 @@ public struct WorkoutsListView: View {
         List {
             ForEach(workouts) { workout in
                 NavigationLink(value: workout.id) {
-                    WorkoutRow(workout: workout)
+                    WorkoutRow(store: store, workout: workout)
                 }
             }
             .onDelete { indexSet in

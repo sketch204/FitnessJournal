@@ -5,23 +5,26 @@
 //  Created by Inal Gotov on 2025-08-31.
 //
 
+import Core
 import Data
 import SwiftUI
 
 struct SegmentRow: View {
+    let store: WorkoutStore
     let segment: Segment
-    
-    init(_ segment: Segment) {
-        self.segment = segment
+
+    var exercise: Exercise {
+        store.exercise(with: segment.exercise)
+        ?? Exercise(name: "Exercise not found")
     }
     
     var body: some View {
         HStack(alignment: .firstTextBaseline) {
             VStack(alignment: .leading) {
-                Text(segment.exercise.name)
+                Text(exercise.name)
                     .multilineTextAlignment(.leading)
                     .font(.title)
-                
+
                 Text("\(segment.sets.count) Sets")
                     .multilineTextAlignment(.leading)
                     .font(.subheadline)
@@ -38,10 +41,12 @@ struct SegmentRow: View {
 }
 
 #Preview("Default") {
+    @Previewable @State var store = WorkoutStore.preview()
+
     List {
-        SegmentRow(.sampleBenchPress)
-        SegmentRow(.sampleDeadlifts)
-        SegmentRow(.sampleChestFlys)
+        SegmentRow(store: store, segment: .sampleBenchPress)
+        SegmentRow(store: store, segment: .sampleDeadlifts)
+        SegmentRow(store: store, segment: .sampleChestFlys)
     }
     .listStyle(.plain)
 }

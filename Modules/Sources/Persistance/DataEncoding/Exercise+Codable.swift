@@ -8,7 +8,7 @@
 import Data
 import Foundation
 
-extension Exercise: Codable {
+extension Exercise: Encodable, DecodableWithConfiguration {
     enum CodingKeys: CodingKey {
         case id
         case name
@@ -20,7 +20,7 @@ extension Exercise: Codable {
         try container.encode(self.name, forKey: .name)
     }
 
-    public init(from decoder: any Decoder) throws {
+    public init(from decoder: any Decoder, configuration: VersionedDecodingConfiguration) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.init(
             id: try container.decode(Identifier<Exercise, UUID>.self, forKey: .id),

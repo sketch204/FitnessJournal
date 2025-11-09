@@ -54,7 +54,7 @@ fileprivate extension AddSetAction {
         
         private func newSet(navigation: SegmentNavigation) -> Segment.Set {
             guard let segment = store.segment(for: navigation),
-                  let latestSet = store.latestSet(with: segment.exercise.id)
+                  let latestSet = store.latestSet(with: segment.exercise)
             else {
                 return Segment.Set(
                     weight: Weight(distribution: .total(50), units: .pounds),

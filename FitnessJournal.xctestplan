@@ -27,8 +27,8 @@
     {
       "target" : {
         "containerPath" : "container:Modules",
-        "identifier" : "CoreUITests",
-        "name" : "CoreUITests"
+        "identifier" : "PersistanceTests",
+        "name" : "PersistanceTests"
       }
     }
   ],

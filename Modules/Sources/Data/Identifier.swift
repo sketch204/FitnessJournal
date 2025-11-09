@@ -17,6 +17,12 @@ public struct Identifier<Parent, RawType> {
 
 public extension Identifier where RawType == UUID {
     static var new: Self { Self(UUID()) }
+    static func uuid(_ uuid: UUID) -> Self {
+        Self(uuid)
+    }
+    static func uuid(_ uuidString: String) -> Self? {
+        UUID(uuidString: uuidString).map { Self($0) }
+    }
 }
 
 // MARK: Equatable & Hashable

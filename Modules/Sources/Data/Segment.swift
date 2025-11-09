@@ -21,10 +21,10 @@ public struct Segment: Hashable, Sendable, Identifiable {
     }
     
     public let id: Identifier<Self, UUID>
-    public var exercise: Exercise
+    public var exercise: Exercise.ID
     public var sets: [Set]
     
-    public init(id: Identifier<Self, UUID> = .new, exercise: Exercise, sets: [Set] = []) {
+    public init(id: Identifier<Self, UUID> = .new, exercise: Exercise.ID, sets: [Set] = []) {
         self.id = id
         self.exercise = exercise
         self.sets = sets
@@ -75,7 +75,7 @@ public extension Segment {
     
     static var sampleBicepCurl: Segment {
         .init(
-            exercise: .sampleBicepCurl,
+            exercise: .new,
             sets: (1...3).map { _ in
                 Set(
                     id: .new,
@@ -88,7 +88,7 @@ public extension Segment {
     
     static var sampleBenchPress: Segment {
         .init(
-            exercise: .sampleBenchPress,
+            exercise: .new,
             sets: (1...3).map { _ in
                 Set(
                     id: .new,
@@ -101,7 +101,7 @@ public extension Segment {
     
     static var sampleDeadlifts: Segment {
         .init(
-            exercise: .sampleDeadlifts,
+            exercise: .new,
             sets: (1...5).map { _ in
                 Set(
                     id: .new,
@@ -114,7 +114,7 @@ public extension Segment {
     
     static var sampleLegExtensions: Segment {
         .init(
-            exercise: .sampleLegExtensions,
+            exercise: .new,
             sets: (1...3).map { _ in
                 Set(
                     id: .new,
@@ -127,7 +127,7 @@ public extension Segment {
     
     static var sampleChestFlys: Segment {
         .init(
-            exercise: .sampleChestFlys,
+            exercise: .new,
             sets: (1...3).map { _ in
                 Set(
                     id: .new,

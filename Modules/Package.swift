@@ -24,6 +24,10 @@ let package = Package(
             name: "CoreTests",
             dependencies: ["Core", "Data"]
         ),
+        testTarget(
+            name: "PersistanceTests",
+            dependencies: ["Persistance", "Data"]
+        ),
 //        .testTarget(
 //            name: "CoreUITests",
 //            dependencies: ["Core", "CoreUI", "Data"]

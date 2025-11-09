@@ -5,12 +5,22 @@
 //  Created by Inal Gotov on 2025-08-31.
 //
 
+import Core
 import Data
 import SwiftUI
 
 struct WorkoutRow: View {
+    let store: WorkoutStore
     let workout: Workout
-    
+
+    var exerciseSummary: String {
+        workout.segments.compactMap {
+            store.exercise(with: $0.exercise)
+        }
+        .map(\.name)
+        .joined(separator: ", ")
+    }
+
     var body: some View {
         VStack(alignment: .leading) {
             HStack(alignment: .firstTextBaseline) {
@@ -23,19 +33,23 @@ struct WorkoutRow: View {
                 Text(workout.date, format: .relative(presentation: .named))
                     .foregroundStyle(.secondary)
             }
-            
-            Text(workout.segments.map(\.exercise.name).joined(separator: ", "))
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+
+            if !exerciseSummary.isEmpty {
+                Text(exerciseSummary)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
         }
     }
 }
 
 #Preview {
+    @Previewable @State var store = WorkoutStore.preview()
+
     List {
-        WorkoutRow(workout: .sample)
-        WorkoutRow(workout: .sample)
-        WorkoutRow(workout: .sample)
+        WorkoutRow(store: store, workout: .sample)
+        WorkoutRow(store: store, workout: .sample)
+        WorkoutRow(store: store, workout: .sample)
     }
     .listStyle(.plain)
 }

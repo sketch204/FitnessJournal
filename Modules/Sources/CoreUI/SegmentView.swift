@@ -22,19 +22,24 @@ struct SegmentView: View {
     var segment: Segment? {
         store.segment(for: navigation)
     }
-    
+    var exercise: Exercise? {
+        segment.flatMap {
+            store.exercise(with: $0.exercise)
+        }
+    }
+
     init(store: WorkoutStore, navigation: SegmentNavigation) {
         self.store = store
         self.navigation = navigation
     }
     
     var body: some View {
-        if let workout, let segment {
+        if let workout, let segment, let exercise {
             List {
                 Button {
-                    appActions.perform(NavigateToExerciseAction(exerciseId: segment.exercise.id))
+                    appActions.perform(NavigateToExerciseAction(exerciseId: segment.exercise))
                 } label: {
-                    headerView(workout: workout, segment: segment)
+                    headerView(workout: workout, segment: segment, exercise: exercise)
                 }
                 .contextMenu {
                     Button {
@@ -78,10 +83,10 @@ struct SegmentView: View {
         }
     }
     
-    private func headerView(workout: Workout, segment: Segment) -> some View {
+    private func headerView(workout: Workout, segment: Segment, exercise: Exercise) -> some View {
         HStack {
             VStack(alignment: .leading) {
-                Text(segment.exercise.name)
+                Text(exercise.name)
                     .multilineTextAlignment(.leading)
                     .font(.title)
                 
@@ -103,7 +108,7 @@ struct SegmentView: View {
             segmentId: navigation.segmentId,
             workoutId: navigation.workoutId
         ) { segment in
-            segment.exercise = exercise
+            segment.exercise = exercise.id
         }
     }
     
@@ -151,7 +156,7 @@ struct SegmentView: View {
 
 #Preview("Empty Exercise") {
     let workout = Workout.sample
-    let segment = Segment(exercise: Exercise(name: "Squats"), sets: [])
+    let segment = Segment(exercise: .new, sets: [])
     let store = WorkoutStore.preview(workouts: [workout]) {
         $0.createSegment(segment, for: $0.workouts.first!.id)
     }

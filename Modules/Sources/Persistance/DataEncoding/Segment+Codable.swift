@@ -8,35 +8,32 @@
 import Data
 import Foundation
 
-extension Segment.Set: Codable {
+extension Segment.Set: Encodable, DecodableWithConfiguration {
     enum CodingKeys: CodingKey {
-        case id
-        case weight
-        case repetitions
+        case id, weight, repetitions
     }
 
     public func encode(to encoder: any Encoder) throws {
-        var container = encoder.container(keyedBy: Segment.Set.CodingKeys.self)
-        try container.encode(self.id, forKey: Segment.Set.CodingKeys.id)
-        try container.encode(self.weight, forKey: Segment.Set.CodingKeys.weight)
-        try container.encode(self.repetitions, forKey: Segment.Set.CodingKeys.repetitions)
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(self.id, forKey: .id)
+        try container.encode(self.weight, forKey: .weight)
+        try container.encode(self.repetitions, forKey: .repetitions)
     }
 
-    public init(from decoder: any Decoder) throws {
-        let container: KeyedDecodingContainer<Segment.Set.CodingKeys> = try decoder.container(keyedBy: Segment.Set.CodingKeys.self)
-        self.init(
-            id: try container.decode(Identifier<Segment.Set, UUID>.self, forKey: Segment.Set.CodingKeys.id),
-            weight: try container.decode(Weight.self, forKey: Segment.Set.CodingKeys.weight),
-            repetitions: try container.decode(Int.self, forKey: Segment.Set.CodingKeys.repetitions),
-        )
+    public init(from decoder: any Decoder, configuration: VersionedDecodingConfiguration) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        let id = try container.decode(ID.self, forKey: .id)
+        let weight = try container.decode(Weight.self, forKey: .weight, configuration: configuration)
+        let repetitions = try container.decode(Int.self, forKey: .repetitions)
+
+        self.init(id: id, weight: weight, repetitions: repetitions)
     }
 }
 
-extension Segment: Codable {
+extension Segment: Encodable, DecodableWithConfiguration {
     enum CodingKeys: CodingKey {
-        case id
-        case exercise
-        case sets
+        case id, exercise, sets
     }
 
     public func encode(to encoder: any Encoder) throws {
@@ -46,12 +43,24 @@ extension Segment: Codable {
         try container.encode(self.sets, forKey: .sets)
     }
 
-    public init(from decoder: any Decoder) throws {
+    public init(from decoder: any Decoder, configuration: VersionedDecodingConfiguration) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.init(
-            id: try container.decode(Identifier<Segment, UUID>.self, forKey: .id),
-            exercise: try container.decode(Exercise.self, forKey: .exercise),
-            sets: try container.decode([Segment.Set].self, forKey: .sets),
-        )
+
+        let id = try container.decode(ID.self, forKey: .id)
+        let exercise = try Self.decodeExercise(from: container, configuration: configuration)
+        let sets = try container.decode([Segment.Set].self, forKey: .sets, configuration: configuration)
+
+        self.init(id: id, exercise: exercise, sets: sets)
+    }
+
+    private static func decodeExercise(
+        from container: KeyedDecodingContainer<CodingKeys>,
+        configuration: VersionedDecodingConfiguration
+    ) throws -> Exercise.ID {
+        if configuration.decodedVersion == 1 {
+            let exercise = try container.decode(Exercise.self, forKey: .exercise, configuration: configuration)
+            return exercise.id
+        }
+        return try container.decode(Exercise.ID.self, forKey: .exercise)
     }
 }

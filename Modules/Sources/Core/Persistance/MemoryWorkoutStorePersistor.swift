@@ -61,11 +61,11 @@ extension WorkoutStorePersistor where Self == MemoryWorkoutStorePersistor {
         workouts: [Workout] = [.sample],
         extraExercises: [Exercise] = [],
     ) -> Self {
-        let exercises = Set(workouts.flatMap({ $0.segments.map(\.exercise) }))
+//        let exercises = Set(workouts.flatMap({ $0.segments.map(\.exercise) }))
         
-        return .memory(
+        .memory(
             workouts: workouts,
-            exercises: Array(exercises) + extraExercises
+            exercises: extraExercises
         )
     }
     

@@ -345,7 +345,6 @@ extension WorkoutStore {
         }
         
         exercises[exerciseIndex] = exercise
-        updateSegments(using: exercise)
         
         saveExercises(exercises: exercises)
         saveWorkouts(workouts: workouts)
@@ -387,22 +386,6 @@ extension WorkoutStore {
         exercises.removeAll(where: { $0.id == exerciseId })
         saveExercises(exercises: exercises)
     }
-    
-    // MARK: Helpers
-    
-    private func updateSegments(using exercise: Exercise) {
-        workouts = workouts.map { workout in
-            var workout = workout
-            workout.segments = workout.segments.map { segment in
-                var segment = segment
-                if segment.exercise.id == exercise.id {
-                    segment.exercise = exercise
-                }
-                return segment
-            }
-            return workout
-        }
-    }
 }
 
 // MARK: Exercises Accessors
@@ -411,7 +394,7 @@ extension WorkoutStore {
     public func maxWeight(for exerciseId: Exercise.ID) -> Weight? {
         workouts
             .compactMap { workout -> Weight? in
-                let filteredSegments = workout.segments.filter({ $0.exercise.id == exerciseId })
+                let filteredSegments = workout.segments.filter({ $0.exercise == exerciseId })
                 guard !filteredSegments.isEmpty else { return nil }
                 return filteredSegments
                     .flatMap(\.sets)
@@ -428,7 +411,7 @@ extension WorkoutStore {
     public func datedSegments(with exerciseId: Exercise.ID) -> [Date: [Segment]] {
         workouts
             .compactMap { workout -> (date: Date, segments: [Segment])? in
-                let filteredSegments = workout.segments.filter({ $0.exercise.id == exerciseId })
+                let filteredSegments = workout.segments.filter({ $0.exercise == exerciseId })
                 guard !filteredSegments.isEmpty else { return nil }
                 return (workout.date, filteredSegments)
             }
@@ -460,7 +443,7 @@ extension WorkoutStore {
     
     public func segments(with exerciseId: Exercise.ID) -> [Segment] {
         workouts.flatMap { workout in
-            workout.segments.filter { $0.exercise.id == exerciseId }
+            workout.segments.filter { $0.exercise == exerciseId }
         }
     }
 }

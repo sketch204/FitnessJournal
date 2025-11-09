@@ -8,7 +8,7 @@
 import Data
 import Foundation
 
-extension Workout: Codable {
+extension Workout: Encodable, DecodableWithConfiguration {
     enum CodingKeys: CodingKey {
         case id
         case date
@@ -22,12 +22,12 @@ extension Workout: Codable {
         try container.encode(self.segments, forKey: .segments)
     }
 
-    public init(from decoder: any Decoder) throws {
+    public init(from decoder: any Decoder, configuration: VersionedDecodingConfiguration) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.init(
             id: try container.decode(Identifier<Workout, UUID>.self, forKey: .id),
             date: try container.decode(Date.self, forKey: .date),
-            segments: try container.decode([Segment].self, forKey: .segments)
+            segments: try container.decode([Segment].self, forKey: .segments, configuration: configuration)
         )
     }
 }
