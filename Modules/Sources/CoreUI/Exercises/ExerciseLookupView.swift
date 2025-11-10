@@ -16,7 +16,7 @@ struct ExerciseLookupView: View {
     private let onSelect: (Exercise) -> Void
     
     @State private var searchString: String = ""
-    
+
     @State private var isRenamingExercise: Bool = false
     @State private var renamedExercise: Exercise?
     
@@ -52,18 +52,12 @@ struct ExerciseLookupView: View {
     
     var body: some View {
         List {
-            if !searchString.isEmpty {
-                Button("Create new \"\(searchString)\" exercise") {
-                    createExercise(searchString)
-                }
-                .buttonStyle(.borderless)
-            }
-            
             ForEach(filteredExercises) { exercise in
                 Button {
                     selectExercise(exercise)
                 } label: {
                     ExerciseRow(store: store, exerciseId: exercise.id)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .contextMenu {
@@ -90,6 +84,15 @@ struct ExerciseLookupView: View {
                 }
             }
         }
+        .safeAreaInset(edge: .bottom, content: {
+            if !searchString.isEmpty {
+                Button("Create new \"\(searchString)\" exercise") {
+                    createExercise(searchString)
+                }
+                .buttonStyle(.borderedProminent)
+                .padding(.bottom)
+            }
+        })
         .alert("Rename Exercise", isPresented: $isRenamingExercise, presenting: renamedExercise) { exercise in
             TextField("New name", text: $newExerciseName, prompt: Text(exercise.name))
             
