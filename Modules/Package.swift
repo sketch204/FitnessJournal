@@ -37,10 +37,6 @@ let package = Package(
             name: "PersistanceTests",
             dependencies: ["Persistance", "Data"]
         ),
-//        .testTarget(
-//            name: "CoreUITests",
-//            dependencies: ["Core", "CoreUI", "Data"]
-//        )
         testTarget(
             name: "DataTests",
             dependencies: ["Data"]

@@ -9,11 +9,19 @@ import Data
 import Foundation
 import Utils
 
+public nonisolated protocol FileWorkoutStorePersistorFileIO {
+    func fileExists(at url: URL) async -> Bool
+    func read(from url: URL) async throws -> Data
+    func write(_ data: Data, to url: URL) async throws
+}
+
 public actor FileWorkoutStorePersistor {
     public static let defaultFileUrl = URL.documentsDirectory.appendingPathComponent("data.json")
     @MainActor
     public static let sampleFileUrl = Bundle.module.url(forResource: "SampleData", withExtension: "json")!
     public static let currentSchemaVersion = Bundle.main.buildNumber
+
+    private let fileIO: FileWorkoutStorePersistorFileIO
 
     private let decoder = {
         let output = JSONDecoder()
@@ -36,8 +44,12 @@ public actor FileWorkoutStorePersistor {
 
     private var data: DataWrapper?
     
-    public init(fileUrl: URL = defaultFileUrl) {
+    public init(
+        fileUrl: URL = defaultFileUrl,
+        fileIO: FileWorkoutStorePersistorFileIO = FileManager.default
+    ) {
         self.fileUrl = fileUrl
+        self.fileIO = fileIO
         Log.core.trace("Initialized FileWorkoutStorePersistor with fileUrl: \(fileUrl, privacy: .public)")
         
         Task {
@@ -45,14 +57,14 @@ public actor FileWorkoutStorePersistor {
         }
     }
     
-    private func loadData() {
-        guard FileManager.default.fileExists(atPath: fileUrl.path(percentEncoded: false)) else {
+    private func loadData() async {
+        guard await fileIO.fileExists(at: fileUrl) else {
             Log.core.trace("Data file does not exist! Initializing new store")
             self.data = DataWrapper(version: Self.currentSchemaVersion)
             return
         }
         do {
-            let fileData = try Data(contentsOf: fileUrl)
+            let fileData = try await  fileIO.read(from: fileUrl)
             self.data = try decoder.decode(DataWrapper.self, from: fileData)
             if self.data?.version == nil {
                 self.data?.version = Self.currentSchemaVersion
@@ -62,10 +74,10 @@ public actor FileWorkoutStorePersistor {
         }
     }
     
-    private func saveData(_ data: DataWrapper) {
+    private func saveData(_ data: DataWrapper) async {
         do {
             let fileData = try encoder.encode(data)
-            try fileData.write(to: fileUrl, options: .atomic)
+            try await  fileIO.write(fileData, to: fileUrl)
         } catch {
             Log.core.critical("Failed to save file data at \(self.fileUrl) due to error! \(error)")
         }
@@ -75,30 +87,30 @@ public actor FileWorkoutStorePersistor {
         data?.workouts ?? []
     }
     
-    public func saveWorkouts(_ workouts: [Workout]) {
+    public func saveWorkouts(_ workouts: [Workout]) async {
         guard data != nil else {
             Log.core.critical("Could not save workouts because no data was loaded!")
             return
         }
         self.data?.workouts = workouts
-        saveData(data!)
+        await saveData(data!)
     }
     
     public func loadExercises() -> [Exercise] {
         data?.exercises ?? []
     }
     
-    public func saveExercises(_ exercises: [Exercise]) {
+    public func saveExercises(_ exercises: [Exercise]) async {
         guard data != nil else {
             Log.core.critical("Could not save exercises because no data was loaded!")
             return
         }
         data?.exercises = exercises
-        saveData(data!)
+        await saveData(data!)
     }
 
-    public func setFileUrl(_ url: URL) {
+    public func setFileUrl(_ url: URL) async {
         fileUrl = url
-        loadData()
+        await loadData()
     }
 }
