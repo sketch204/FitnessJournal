@@ -1,0 +1,15 @@
+<svg width="1024" height="1024" xmlns="http://www.w3.org/2000/svg">
+
+ <g>
+  <title>Layer 1</title>
+  <rect rx="10" id="svg_2" height="40" width="230" y="274" x="397" stroke-width="0" stroke="#000" fill="#ffffff"/>
+  <rect rx="25" id="svg_9" height="230" width="50" y="179" x="337" stroke-width="0" stroke="#000" fill="#ffffff"/>
+  <rect rx="25" id="svg_10" height="130" width="50" y="229" x="277" stroke-width="0" stroke="#ffffff" fill="#ffffff"/>
+  <rect rx="25" id="svg_8" height="130" width="50" y="229" x="697" stroke-width="0" stroke="#000" fill="#ffffff"/>
+  <rect rx="25" id="svg_7" height="230" width="50" y="179" x="637" stroke-width="0" stroke="#000" fill="#ffffff"/>
+  <rect rx="10" id="svg_14" height="30" width="400" y="500" x="312" stroke-width="30" stroke="#ffffff" fill="#ffffff"/>
+  <rect rx="10" id="svg_15" height="30" width="400" y="600" x="312" stroke-width="30" stroke="#ffffff" fill="#ffffff"/>
+  <rect rx="10" id="svg_16" height="30" width="400" y="700" x="313" stroke-width="30" stroke="#ffffff" fill="#ffffff"/>
+  <rect rx="10" id="svg_12" height="30" width="400" y="800" x="312" stroke-width="30" stroke="#ffffff" fill="#ffffff"/>
+ </g>
+</svg>
