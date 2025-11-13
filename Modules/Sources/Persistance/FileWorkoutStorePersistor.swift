@@ -19,7 +19,7 @@ public actor FileWorkoutStorePersistor {
     public static let defaultFileUrl = URL.documentsDirectory.appendingPathComponent("data.json")
     @MainActor
     public static let sampleFileUrl = Bundle.module.url(forResource: "SampleData", withExtension: "json")!
-    public static let currentSchemaVersion = Bundle.main.buildNumber
+    public static let currentSchemaVersion = 2
 
     private let fileIO: FileWorkoutStorePersistorFileIO
 
