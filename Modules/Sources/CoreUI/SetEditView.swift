@@ -53,6 +53,8 @@ struct SetEditView: View {
     }
 }
 
+#if DEBUG
+
 #Preview {
     PreviewingStore { store in
         let workout = store.workouts.first!
@@ -69,3 +71,5 @@ struct SetEditView: View {
         )
     }
 }
+
+#endif

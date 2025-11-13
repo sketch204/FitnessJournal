@@ -158,6 +158,8 @@ struct ExerciseLookupView: View {
     }
 }
 
+#if DEBUG
+
 #Preview {
     PreviewingStore { store in
         NavigationStack {
@@ -167,3 +169,5 @@ struct ExerciseLookupView: View {
         }
     }
 }
+
+#endif

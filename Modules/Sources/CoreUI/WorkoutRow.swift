@@ -43,6 +43,8 @@ struct WorkoutRow: View {
     }
 }
 
+#if DEBUG
+
 #Preview {
     PreviewingStore { store in
         let workout = store.workouts.first!
@@ -55,3 +57,5 @@ struct WorkoutRow: View {
         .listStyle(.plain)
     }
 }
+
+#endif

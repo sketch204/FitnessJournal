@@ -136,6 +136,8 @@ struct SegmentView: View {
     }
 }
 
+#if DEBUG
+
 #Preview("Default") {
     PreviewingStore { store in
         let workout = store.workouts.first!
@@ -178,3 +180,5 @@ struct SegmentView: View {
         .environment(\.appActions, AppActions())
     }
 }
+
+#endif

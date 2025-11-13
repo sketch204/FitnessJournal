@@ -40,6 +40,8 @@ struct SegmentRow: View {
     }
 }
 
+#if DEBUG
+
 #Preview("Default") {
     PreviewingStore { store in
         let workout = store.workouts.first!
@@ -50,3 +52,5 @@ struct SegmentRow: View {
         .listStyle(.plain)
     }
 }
+
+#endif

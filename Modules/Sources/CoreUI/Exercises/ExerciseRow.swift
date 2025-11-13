@@ -71,6 +71,8 @@ struct ExerciseRow: View {
     }
 }
 
+#if DEBUG
+
 #Preview {
     PreviewingStore { store in
         let exercises = store.exercises.sorted(by: { $0.name < $1.name })
@@ -81,3 +83,5 @@ struct ExerciseRow: View {
         .listStyle(.plain)
     }
 }
+
+#endif

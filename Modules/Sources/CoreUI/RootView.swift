@@ -34,8 +34,12 @@ public struct RootView: View {
     }
 }
 
+#if DEBUG
+
 #Preview {
     @Previewable @State var store = WorkoutStore.preview()
     
     RootView(workoutStore: store)
 }
+
+#endif

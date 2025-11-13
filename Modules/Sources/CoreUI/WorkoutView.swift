@@ -88,6 +88,8 @@ public struct WorkoutView: View {
     }
 }
 
+#if DEBUG
+
 #Preview("Default") {
     PreviewingStore { store in
         let workout = store.workouts.first!
@@ -127,3 +129,5 @@ public struct WorkoutView: View {
         .environment(\.appActions, AppActions())
     }
 }
+
+#endif

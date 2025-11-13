@@ -24,6 +24,8 @@ struct SetRow: View {
     }
 }
 
+#if DEBUG
+
 #Preview {
     PreviewingStore { store in
         let workout = store.workouts.first!
@@ -36,3 +38,5 @@ struct SetRow: View {
         }
     }
 }
+
+#endif

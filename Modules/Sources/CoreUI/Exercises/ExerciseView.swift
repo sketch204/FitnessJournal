@@ -98,6 +98,8 @@ struct ExerciseView: View {
     }
 }
 
+#if DEBUG
+
 #Preview("Default") {
     PreviewingStore { store in
         NavigationStack {
@@ -125,3 +127,5 @@ struct ExerciseView: View {
         }
     }
 }
+
+#endif

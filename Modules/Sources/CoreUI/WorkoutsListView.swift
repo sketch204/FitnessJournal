@@ -59,6 +59,8 @@ public struct WorkoutsListView: View {
     }
 }
 
+#if DEBUG
+
 #Preview("Default") {
     NavigationStack {
         WorkoutsListView(store: .preview())
@@ -72,3 +74,5 @@ public struct WorkoutsListView: View {
         WorkoutsListView(store: store)
     }
 }
+
+#endif
