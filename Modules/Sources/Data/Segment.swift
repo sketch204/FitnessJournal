@@ -12,11 +12,18 @@ public struct Segment: Hashable, Sendable, Identifiable {
         public let id: Identifier<Self, UUID>
         public var weight: Weight
         public var repetitions: Int
-        
-        public init(id: Identifier<Self, UUID> = .new, weight: Weight, repetitions: Int) {
+        public var rateOfPerceivedExertion: Int?
+
+        public init(
+            id: Identifier<Self, UUID> = .new,
+            weight: Weight,
+            repetitions: Int,
+            rateOfPerceivedExertion: Int? = nil
+        ) {
             self.id = id
             self.weight = weight
             self.repetitions = repetitions
+            self.rateOfPerceivedExertion = rateOfPerceivedExertion
         }
     }
     

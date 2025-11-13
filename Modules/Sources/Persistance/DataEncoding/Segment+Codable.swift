@@ -10,7 +10,7 @@ import Foundation
 
 extension Segment.Set: Encodable, DecodableWithConfiguration {
     enum CodingKeys: CodingKey {
-        case id, weight, repetitions
+        case id, weight, repetitions, rateOfPerceivedExertion
     }
 
     public func encode(to encoder: any Encoder) throws {
@@ -18,6 +18,7 @@ extension Segment.Set: Encodable, DecodableWithConfiguration {
         try container.encode(self.id, forKey: .id)
         try container.encode(self.weight, forKey: .weight)
         try container.encode(self.repetitions, forKey: .repetitions)
+        try container.encodeIfPresent(self.rateOfPerceivedExertion, forKey: .rateOfPerceivedExertion)
     }
 
     public init(from decoder: any Decoder, configuration: VersionedDecodingConfiguration) throws {
@@ -26,8 +27,9 @@ extension Segment.Set: Encodable, DecodableWithConfiguration {
         let id = try container.decode(ID.self, forKey: .id)
         let weight = try container.decode(Weight.self, forKey: .weight, configuration: configuration)
         let repetitions = try container.decode(Int.self, forKey: .repetitions)
+        let rateOfPerceivedExertion = try container.decodeIfPresent(Int.self, forKey: .rateOfPerceivedExertion)
 
-        self.init(id: id, weight: weight, repetitions: repetitions)
+        self.init(id: id, weight: weight, repetitions: repetitions, rateOfPerceivedExertion: rateOfPerceivedExertion)
     }
 }
 
