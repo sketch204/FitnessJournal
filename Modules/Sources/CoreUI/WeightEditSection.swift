@@ -174,6 +174,8 @@ struct WeightEditSection: View {
     }
 }
 
+#if DEBUG
+
 #Preview {
     @Previewable @State var weight = Weight(
         distribution: .barbell(plates: 45, bar: 50),
@@ -187,3 +189,5 @@ struct WeightEditSection: View {
         WeightView(weight: weight)
     }
 }
+
+#endif

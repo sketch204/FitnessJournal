@@ -15,7 +15,8 @@ struct SetEditView: View {
 
     @State private var repetitions: Int
     @State private var weight: Weight
-    
+    @State private var rateOfPerceivedExertion: Int
+
     init(store: WorkoutStore, navigation: SetNavigation) {
         self.store = store
         self.navigation = navigation
@@ -23,6 +24,7 @@ struct SetEditView: View {
         let set = store.set(for: navigation)
         _repetitions = State(initialValue: set?.repetitions ?? 0)
         _weight = State(initialValue: set?.weight ?? .init(distribution: .total(0), units: .pounds))
+        _rateOfPerceivedExertion = State(initialValue: set?.rateOfPerceivedExertion ?? -1)
     }
     
     var body: some View {
@@ -30,26 +32,29 @@ struct SetEditView: View {
             Stepper("\(repetitions) Repetitions", value: $repetitions, in: 1...100)
             
             WeightEditSection(weight: $weight)
+
+            RPEEditSection($rateOfPerceivedExertion)
         }
-        .onChange(of: weight) {
-            store.updateSet(
-                with: navigation.setId,
-                segmentId: navigation.segmentId,
-                workoutId: navigation.workoutId,
-            ) { set in
-                set.weight = weight
-            }
-        }
-        .onChange(of: repetitions) {
-            store.updateSet(
-                with: navigation.setId,
-                segmentId: navigation.segmentId,
-                workoutId: navigation.workoutId,
-            ) { set in
-                set.repetitions = repetitions
-            }
-        }
+        .onChange(of: weight, updateSet)
+        .onChange(of: repetitions, updateSet)
+        .onChange(of: rateOfPerceivedExertion, updateSet)
         .navigationTitle("Set")
+    }
+
+    private func updateSet() {
+        store.updateSet(
+            with: navigation.setId,
+            segmentId: navigation.segmentId,
+            workoutId: navigation.workoutId
+        ) { set in
+            set.weight = weight
+            set.repetitions = repetitions
+            if rateOfPerceivedExertion < 0 {
+                set.rateOfPerceivedExertion = nil
+            } else {
+                set.rateOfPerceivedExertion = rateOfPerceivedExertion
+            }
+        }
     }
 }
 
