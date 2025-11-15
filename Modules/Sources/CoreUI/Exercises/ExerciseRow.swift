@@ -31,14 +31,12 @@ struct ExerciseRow: View {
         if let exercise {
             HStack {
                 VStack(alignment: .leading) {
-                    HStack(alignment: .firstTextBaseline) {
+                    HStack(alignment: .lastTextBaseline) {
                         Text(exercise.name)
                             .font(.title2)
                         
-                        if let latestSegment,
-                           let compositionString = latestSegment.compositionString
-                        {
-                            Text("(\(compositionString))")
+                        if let latestSegment {
+                            Text("(\(latestSegment.compositionString))")
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                         }

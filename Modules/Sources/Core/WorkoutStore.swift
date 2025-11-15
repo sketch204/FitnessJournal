@@ -416,7 +416,14 @@ extension WorkoutStore {
         guard let maxDate = segments.keys.max() else { return nil }
         return segments[maxDate]?.last
     }
-    
+
+    public func segmentBefore(_ date: Date, with exerciseId: Exercise.ID) -> Segment? {
+        let segments = datedSegments(with: exerciseId)
+        let sortedDates = segments.keys.sorted(by: >)
+        guard let earlierDate = sortedDates.first(where: { $0 < date }) else { return nil }
+        return segments[earlierDate]?.last
+    }
+
     public func sets(with exerciseId: Exercise.ID) -> [Date: [Segment.Set]] {
         datedSegments(with: exerciseId)
             .mapValues { segments in

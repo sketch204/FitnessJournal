@@ -59,26 +59,28 @@ extension Segment {
         )
         .values
         
-        let allWeightsUnique = Swift.Set(groupedWeights).count == groupedWeights.count
+        let allWeightsUnique = groupedWeights.allSatisfy({ $0.count == 1 })
         
         guard !allWeightsUnique else { return nil }
         
         return groupedWeights.max(by: { $0.count < $1.count })?.first
     }
     
-    public var displayRepetitions: Int? {
-        commonRepetitions ?? sets.max(by: { $0.repetitions < $1.repetitions })?.repetitions
+    public var displayRepetitionsString: String {
+        commonRepetitions.map(String.init) ??
+        sets.map(\.repetitions)
+            .map(String.init)
+            .joined(separator: "/")
     }
     
     public var commonRepetitions: Int? {
         let groupedRepetitions = Dictionary(grouping: sets.map(\.repetitions), by: \.self).values
-        let allRepsUnique = Swift.Set(groupedRepetitions).count == groupedRepetitions.count
+        let allRepsUnique = groupedRepetitions.allSatisfy({ $0.count == 1 })
         guard !allRepsUnique else { return nil }
         return groupedRepetitions.max(by: { $0.count < $1.count })?.first
     }
     
-    public var compositionString: String? {
-        guard let displayRepetitions else { return nil }
-        return "\(sets.count)x\(displayRepetitions)"
+    public var compositionString: String {
+        return "\(sets.count)x\(displayRepetitionsString)"
     }
 }

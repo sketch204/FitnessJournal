@@ -50,30 +50,34 @@ struct SegmentView: View {
                         Label("Edit", systemImage: "pencil")
                     }
                 }
-                
-                ForEach(segment.sets) { set in
-                    Button {
-                        editSet(setId: set.id)
-                    } label: {
-                        SetRow(set: set)
-                    }
-                }
-                .onDelete { indexSet in
-                    indexSet
-                        .map { segment.sets[$0] }
-                        .forEach { set in
-                            store.deleteSet(set, segmentId: segment.id, workoutId: workout.id)
+
+                previousSegmentView(workout: workout, exercise: exercise)
+
+                Section("Sets") {
+                    ForEach(segment.sets) { set in
+                        Button {
+                            editSet(setId: set.id)
+                        } label: {
+                            SetRow(set: set)
                         }
+                    }
+                    .onDelete { indexSet in
+                        indexSet
+                            .map { segment.sets[$0] }
+                            .forEach { set in
+                                store.deleteSet(set, segmentId: segment.id, workoutId: workout.id)
+                            }
+                    }
+
+                    Button {
+                        addNewSet()
+                    } label: {
+                        Text("Add Set")
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.borderless)
                 }
-                
-                Button {
-                    addNewSet()
-                } label: {
-                    Text("Add Set")
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.borderless)
             }
             .listStyle(.plain)
             .animation(.default, value: segment.sets.count)
@@ -102,7 +106,28 @@ struct SegmentView: View {
                 .foregroundStyle(.secondary)
         }
     }
-    
+
+    @ViewBuilder
+    private func previousSegmentView(workout: Workout, exercise: Exercise) -> some View {
+        if let previousSegment = store.segmentBefore(workout.date, with: exercise.id) {
+            DisclosureGroup {
+                HStack {
+                    Text(previousSegment.compositionString)
+
+                    Spacer()
+
+                    if let weight = previousSegment.displayWeight {
+                        WeightView(weight: weight)
+                    }
+                }
+            } label: {
+                Text("Previous Workout")
+                    .font(.headline)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
     private func updateSegment(with exercise: Exercise) {
         store.updateSegment(
             segmentId: navigation.segmentId,
