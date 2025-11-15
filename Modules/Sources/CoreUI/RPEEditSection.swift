@@ -5,6 +5,7 @@
 //  Created by Inal Gotov on 2025-11-13.
 //
 
+import Data
 import SwiftUI
 
 struct RPEEditSection: View {
@@ -13,7 +14,7 @@ struct RPEEditSection: View {
     @Binding private var rateOfPerceivedExertion: Double
     @State private var isRatingExertion: Bool
 
-    @State private var isShowingMoreDetails: Bool = false
+    @State private var isShowingMoreDetails: Bool = true
 
     private var labelText: String {
         if isRatingExertion {
@@ -105,13 +106,33 @@ struct RPEEditSection: View {
                     Text("It is a subjective metric that can be used to judge your overall load and whether you should pushed harder or go lighter then next time you perform this exercise. Below is a typical breakdown of the values used in the scale.")
                         .padding(.vertical, 4)
 
-                    Text("• 0: No exertion")
-                    Text("• 1: Very light")
-                    Text("• 2 to 3: Light")
-                    Text("• 4 to 5: Moderate exertion")
-                    Text("• 6 to 7: High exertion (1 more set left after this set)")
-                    Text("• 8 to 9: Very hard (1 to 2 reps left after this set)")
-                    Text("• 10: Maximum exertion (no reps left after this set)")
+                    Text("•") + Text(" 0")
+                        .foregroundStyle(Segment.Set.color(forRpe: 0)) +
+                    Text(": No effort/at rest")
+
+                    Text("•") + Text(" 1")
+                        .foregroundStyle(Segment.Set.color(forRpe: 1)) +
+                    Text(": Very light effort")
+
+                    Text("•") + Text(" 2-3")
+                        .foregroundStyle(Segment.Set.color(forRpe: 3)) +
+                    Text(": Light effort")
+
+                    Text("•") + Text(" 4-5")
+                        .foregroundStyle(Segment.Set.color(forRpe: 5)) +
+                    Text(": Moderate exertion. Heavy breathing and elevated heart rate.")
+
+                    Text("•") + Text(" 6-7")
+                        .foregroundStyle(Segment.Set.color(forRpe: 7)) +
+                    Text(": High exertion. 1-2 more sets left after this one. Difficulty holding a conversation.")
+
+                    Text("•") + Text(" 8-9")
+                        .foregroundStyle(Segment.Set.color(forRpe: 9)) +
+                    Text(": Very hard. 1 to 2 reps left after this set. Unable to carry a conversation.")
+
+                    Text("•") + Text(" 10")
+                        .foregroundStyle(Segment.Set.color(forRpe: 10)) +
+                    Text(": Maximum exertion. No more reps left after this set.")
                 }
                 .transition(.move(edge: .top))
             }
@@ -139,7 +160,7 @@ struct RPEEditSection: View {
     Form {
         RPEEditSection($rate)
     }
-    .overlay {
+    .overlay(alignment: .bottom) {
         Text("\(rate)")
     }
 }

@@ -51,12 +51,9 @@ struct WeightView: View {
     
     private var icon: Image {
         switch weight.distribution {
-        case .total:
-            Image(systemName: "scalemass.fill")
-        case .dumbbell:
-            Image(systemName: "dumbbell.fill")
-        case .barbell:
-            Image(systemName: "figure.strengthtraining.traditional")
+        case .total: .totalWeight
+        case .dumbbell: .dumbbellWeight
+        case .barbell: .barbellWeight
         }
     }
 }
