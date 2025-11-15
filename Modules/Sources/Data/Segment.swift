@@ -25,6 +25,15 @@ public struct Segment: Hashable, Sendable, Identifiable {
             self.repetitions = repetitions
             self.rateOfPerceivedExertion = rateOfPerceivedExertion
         }
+
+        public func duplicated(newId: Bool) -> Self {
+            Set(
+                id: newId ? .new : id,
+                weight: weight,
+                repetitions: repetitions,
+                rateOfPerceivedExertion: rateOfPerceivedExertion
+            )
+        }
     }
     
     public let id: Identifier<Self, UUID>

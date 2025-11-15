@@ -62,10 +62,7 @@ fileprivate extension AddSetAction {
                 )
             }
             
-            return Segment.Set(
-                weight: latestSet.weight,
-                repetitions: latestSet.repetitions
-            )
+            return latestSet.duplicated(newId: true)
         }
     }
 }
